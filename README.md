@@ -3,783 +3,1941 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Absensi HWL Law Firm</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome CDN -->
+    <title>Aplikasi Absensi - HWL Law Firm</title>
+    <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- QR Scanner Library CDN -->
-    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- QRCode.js Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- JsQR Library for Camera Scanning -->
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
     
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        maroon: {
-                            DEFAULT: '#6B1426',
-                            dark: '#4A0D1A',
-                            light: '#8C1D33'
-                        },
-                        gold: {
-                            DEFAULT: '#C5A059',
-                            light: '#E2C37D',
-                            dark: '#A37F3E'
-                        }
-                    }
-                }
+    <style>
+        :root {
+            --maroon-primary: #6B0D18;
+            --maroon-dark: #4A0810;
+            --maroon-light: #8C1C2A;
+            --gold-primary: #D4AF37;
+            --gold-light: #F4E5B0;
+            --gold-dark: #AA820A;
+            --white: #FFFFFF;
+            --bg-light: #FAF8F5;
+            --text-dark: #2C2C2C;
+            --text-muted: #666666;
+            --border-color: #E2D9CC;
+            --shadow: 0 8px 24px rgba(107, 13, 24, 0.08);
+            --shadow-hover: 0 12px 32px rgba(107, 13, 24, 0.15);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Top Header Navigation */
+        .navbar {
+            background: linear-gradient(135deg, var(--maroon-dark) 0%, var(--maroon-primary) 100%);
+            color: var(--white);
+            padding: 1rem 2rem;
+            border-bottom: 4px solid var(--gold-primary);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .brand-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .brand-logo {
+            width: 48px;
+            height: 48px;
+            background: var(--gold-primary);
+            color: var(--maroon-dark);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: 0 0 10px rgba(212, 175, 55, 0.4);
+        }
+
+        .brand-title {
+            font-family: 'Cinzel', serif;
+            font-size: 1.4rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            color: var(--gold-light);
+        }
+
+        .brand-subtitle {
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.8);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .nav-controls {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 0.6rem 1.2rem;
+            border-radius: 6px;
+            border: none;
+            font-weight: 600;
+            font-size: 0.88rem;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+
+        .btn-gold {
+            background: linear-gradient(135deg, var(--gold-primary) 0%, var(--gold-dark) 100%);
+            color: var(--maroon-dark);
+            border: 1px solid var(--gold-light);
+        }
+
+        .btn-gold:hover {
+            background: var(--gold-light);
+            box-shadow: 0 0 12px rgba(212, 175, 55, 0.5);
+            transform: translateY(-1px);
+        }
+
+        .btn-maroon {
+            background: var(--maroon-primary);
+            color: var(--white);
+            border: 1px solid var(--gold-primary);
+        }
+
+        .btn-maroon:hover {
+            background: var(--maroon-light);
+            transform: translateY(-1px);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--white);
+            border: 1px solid var(--gold-primary);
+        }
+
+        .btn-outline:hover {
+            background: rgba(212, 175, 55, 0.15);
+            color: var(--gold-light);
+        }
+
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #d0d0d0;
+        }
+
+        .btn-danger {
+            background: #c0392b;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #a93226;
+        }
+
+        /* Container Layout */
+        .main-container {
+            max-width: 1300px;
+            width: 100%;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+            flex: 1;
+        }
+
+        /* Tab / Section Views */
+        .view-section {
+            display: none;
+        }
+
+        .view-section.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Cards Layout */
+        .card {
+            background: var(--white);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow);
+            padding: 1.8rem;
+            margin-bottom: 1.8rem;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--bg-light);
+            padding-bottom: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-title {
+            font-family: 'Cinzel', serif;
+            font-size: 1.25rem;
+            color: var(--maroon-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-weight: 700;
+        }
+
+        /* Grid Layouts */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .grid-4 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.2rem;
+        }
+
+        /* Metric Box */
+        .stat-card {
+            background: linear-gradient(135deg, #FFFDF8 0%, #FAF4E8 100%);
+            border: 1px solid var(--gold-primary);
+            border-radius: 10px;
+            padding: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            background: var(--maroon-primary);
+            color: var(--gold-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+        }
+
+        .stat-val {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--maroon-dark);
+        }
+
+        .stat-lbl {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        /* Forms Styling */
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            font-size: 0.88rem;
+            margin-bottom: 0.4rem;
+            color: var(--maroon-dark);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.7rem 0.9rem;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.9rem;
+            transition: border-color 0.2s ease;
+            background: #FAFAFA;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--gold-primary);
+            background: #FFF;
+            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.15);
+        }
+
+        textarea.form-control {
+            min-height: 90px;
+            resize: vertical;
+        }
+
+        /* Tables */
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.88rem;
+        }
+
+        .table th {
+            background: var(--maroon-primary);
+            color: var(--gold-light);
+            padding: 0.9rem 1rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.78rem;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid var(--gold-primary);
+        }
+
+        .table td {
+            padding: 0.8rem 1rem;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
+        }
+
+        .table tbody tr:nth-child(even) {
+            background-color: #FAF8F5;
+        }
+
+        .table tbody tr:hover {
+            background-color: #F3ECE1;
+        }
+
+        /* Badges */
+        .badge {
+            padding: 0.35rem 0.7rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            display: inline-block;
+        }
+
+        .badge-success {
+            background: #27ae60;
+            color: white;
+        }
+
+        .badge-warning {
+            background: #f39c12;
+            color: white;
+        }
+
+        .badge-info {
+            background: #2980b9;
+            color: white;
+        }
+
+        /* Camera Scanner Frame */
+        #interactive-scanner {
+            width: 100%;
+            max-width: 450px;
+            height: 320px;
+            border: 3px solid var(--gold-primary);
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            background: #000;
+            margin: 0 auto 1.5rem auto;
+        }
+
+        #scanner-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .scanner-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 220px;
+            height: 220px;
+            border: 2px dashed var(--gold-primary);
+            box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.45);
+            pointer-events: none;
+            border-radius: 8px;
+        }
+
+        /* Modals */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.65);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--white);
+            border-radius: 12px;
+            width: 90%;
+            max-width: 550px;
+            border: 2px solid var(--gold-primary);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            overflow: hidden;
+            animation: modalSlide 0.3s ease;
+        }
+
+        @keyframes modalSlide {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-header {
+            background: var(--maroon-primary);
+            color: var(--gold-light);
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: 'Cinzel', serif;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-footer {
+            padding: 1rem 1.5rem;
+            background: #F9F9F9;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.8rem;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: var(--gold-light);
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+
+        /* Profile & QR Card */
+        .profile-qr-card {
+            text-align: center;
+            padding: 1.5rem;
+            border: 2px dashed var(--gold-primary);
+            border-radius: 12px;
+            background: #FFFDF8;
+        }
+
+        .profile-img-preview {
+            width: 110px;
+            height: 110px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--gold-primary);
+            margin: 0 auto 1rem auto;
+            display: block;
+            background: #eee;
+        }
+
+        .live-clock {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--maroon-primary);
+            font-family: monospace;
+            letter-spacing: 2px;
+            text-align: center;
+            margin: 0.5rem 0;
+        }
+
+        .live-date {
+            text-align: center;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 1.2rem;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 1.5rem;
+            background: var(--maroon-dark);
+            color: var(--gold-light);
+            font-size: 0.82rem;
+            border-top: 2px solid var(--gold-primary);
+            margin-top: auto;
+        }
+
+        /* Printable Wall QR Section */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #printable-wall-qr, #printable-wall-qr * {
+                visibility: visible;
+            }
+            #printable-wall-qr {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
             }
         }
-    </script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; }
-        .gold-gradient { background: linear-gradient(135deg, #C5A059 0%, #E2C37D 50%, #A37F3E 100%); }
-        .maroon-gradient { background: linear-gradient(135deg, #6B1426 0%, #4A0D1A 100%); }
+
+        /* Floating Sync Status Pill */
+        .sync-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            background: rgba(255,255,255,0.15);
+            color: #fff;
+            border: 1px solid rgba(212,175,55,0.5);
+        }
+        .sync-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #2ecc71;
+            box-shadow: 0 0 6px #2ecc71;
+        }
     </style>
 </head>
-<body class="bg-gray-100 text-gray-800 min-h-screen flex flex-col justify-between">
+<body>
 
-    <!-- Header Navbar -->
-    <header class="maroon-gradient text-white border-b-4 border-gold shadow-lg sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
-            <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 rounded-full gold-gradient flex items-center justify-center text-maroon-dark font-bold text-xl shadow">
-                    <i class="fa-solid fa-scale-balanced"></i>
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <div class="brand-container">
+            <div class="brand-logo">
+                <i class="fa-solid fa-scale-balanced"></i>
+            </div>
+            <div>
+                <div class="brand-title">HWL LAW FIRM</div>
+                <div class="brand-subtitle">Kantor Hukum HWL & Partners - Sistem Absensi Real-Time</div>
+            </div>
+        </div>
+
+        <div class="sync-pill" id="syncStatus">
+            <div class="sync-dot"></div>
+            <span>Firebase RTDB Terkoneksi</span>
+        </div>
+
+        <div class="nav-controls">
+            <button class="btn btn-gold" id="btnNavKaryawan" onclick="switchView('karyawanView')">
+                <i class="fa-solid fa-user-check"></i> Portal Karyawan
+            </button>
+            <button class="btn btn-outline" id="btnNavAdmin" onclick="openAdminLoginModal()">
+                <i class="fa-solid fa-user-shield"></i> Portal Admin
+            </button>
+            <button class="btn btn-outline" onclick="switchView('wallBarcodeView')">
+                <i class="fa-solid fa-qrcode"></i> QR Dinding Kantor
+            </button>
+        </div>
+    </nav>
+
+    <div class="main-container">
+
+        <!-- ========================================== -->
+        <!-- PORTAL KARYAWAN VIEW                       -->
+        <!-- ========================================== -->
+        <div id="karyawanView" class="view-section active">
+            
+            <div class="grid-2">
+                <!-- Left Box: Scan Barcode Absen & Presensi -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fa-solid fa-camera"></i> Scan Barcode Presensi Hari Ini
+                        </div>
+                    </div>
+
+                    <div class="live-clock" id="liveClockDisplay">00:00:00</div>
+                    <div class="live-date" id="liveDateDisplay">Kamis, 30 Juli 2026</div>
+
+                    <!-- Mode Selector for Scan -->
+                    <div class="form-group" style="text-align: center; margin-bottom: 1.2rem;">
+                        <button class="btn btn-maroon btn-sm" onclick="startCameraScan()"><i class="fa-solid fa-video"></i> Buka Kamera HP Scan QR Kantor</button>
+                        <button class="btn btn-secondary btn-sm" onclick="stopCameraScan()"><i class="fa-solid fa-video-slash"></i> Matikan Kamera</button>
+                    </div>
+
+                    <div id="interactive-scanner" style="display: none;">
+                        <video id="scanner-video" playsinline></video>
+                        <div class="scanner-overlay"></div>
+                    </div>
+
+                    <!-- Form Presensi Manual / Auto after QR Scan -->
+                    <form id="attendanceForm" onsubmit="handleAttendanceSubmit(event)">
+                        <div class="form-group">
+                            <label class="form-label">Pilih ID / Nama Karyawan</label>
+                            <select class="form-control" id="employeeSelect" required onchange="onEmployeeSelectChange()">
+                                <option value="">-- Pilih Nama Anda --</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Agenda Kegiatan Hari Ini</label>
+                            <textarea class="form-control" id="agendaInput" placeholder="Tuliskan detail agenda persidangan, riset hukum, pendampingan klien, atau tugas hari ini..." required></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Lokasi GPS (Otomatis)</label>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <input type="text" class="form-control" id="gpsDisplay" readonly placeholder="Mengambil koordinat GPS...">
+                                <button type="button" class="btn btn-gold" onclick="fetchGPSLocation()"><i class="fa-solid fa-location-crosshairs"></i></button>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-gold" style="width: 100%; padding: 0.9rem; font-size: 1rem;">
+                            <i class="fa-solid fa-fingerprint"></i> KIRIM PRESENSI SEKARANG
+                        </button>
+                    </form>
                 </div>
+
+                <!-- Right Box: Info Tugas, Profile & Request Izin -->
                 <div>
-                    <h1 class="font-bold text-lg leading-tight tracking-wider text-gold-light">HWL LAW FIRM</h1>
-                    <p class="text-xs text-gray-200">Advocates & Legal Consultants</p>
+                    <!-- Card Profile & QR Code ID -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <i class="fa-solid fa-id-card"></i> Identitas & Profil Karyawan
+                            </div>
+                        </div>
+                        <div class="profile-qr-card" id="profileQrDisplayBox">
+                            <img src="https://via.placeholder.com/110?text=Foto" id="employeeProfilePic" class="profile-img-preview">
+                            <h3 id="employeeProfileName" style="color: var(--maroon-primary); font-family: 'Cinzel', serif;">Pilih Karyawan</h3>
+                            <p id="employeeProfileRole" style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">-</p>
+                            
+                            <div style="margin-top: 1rem;">
+                                <label class="btn btn-outline btn-sm" style="color: var(--maroon-dark); border-color: var(--maroon-dark); cursor: pointer;">
+                                    <i class="fa-solid fa-upload"></i> Unggah / Ubah Foto Profil
+                                    <input type="file" id="profilePicInput" accept="image/*" style="display: none;" onchange="handleProfilePhotoUpload(event)">
+                                </label>
+                            </div>
+
+                            <div style="margin-top: 1.5rem; display: inline-block;">
+                                <div id="employeePersonalQR"></div>
+                                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.4rem;">QR Code ID Karyawan</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card Portal Izin / Sakit -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <i class="fa-solid fa-notes-medical"></i> Portal Izin / Surat Sakit
+                            </div>
+                        </div>
+                        <form id="leaveForm" onsubmit="handleLeaveSubmit(event)">
+                            <div class="form-group">
+                                <label class="form-label">Karyawan</label>
+                                <select class="form-control" id="leaveEmployeeSelect" required>
+                                    <option value="">-- Pilih Karyawan --</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Jenis Permohonan</label>
+                                <select class="form-control" id="leaveType" required>
+                                    <option value="Sakit dengan Surat Dokter">Sakit dengan Surat Dokter</option>
+                                    <option value="Izin Keperluan Mendesak">Izin Keperluan Mendesak</option>
+                                    <option value="Cuti Resmi">Cuti Resmi</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Tanggal Izin</label>
+                                <input type="date" class="form-control" id="leaveDate" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Keterangan / Alasan</label>
+                                <textarea class="form-control" id="leaveReason" placeholder="Jelaskan alasan permohonan izin..." required></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Unggah Foto Surat Keterangan Sakit / Bukti</label>
+                                <input type="file" class="form-control" id="leaveProofFile" accept="image/*" required onchange="previewLeaveProof(event)">
+                                <img id="leaveProofPreview" style="max-width: 100%; max-height: 150px; display: none; margin-top: 0.8rem; border-radius: 6px; border: 1px solid var(--gold-primary);">
+                            </div>
+                            <button type="submit" class="btn btn-maroon" style="width: 100%;">
+                                <i class="fa-solid fa-paper-plane"></i> Kirim Permohonan Izin
+                            </button>
+                        </form>
+                    </div>
                 </div>
             </div>
-            <div id="header-user-info" class="text-right text-xs"></div>
-        </div>
-    </header>
 
-    <!-- Indikator Status Cloud Sync -->
-    <div id="sync-banner" class="bg-amber-500 text-white text-[11px] font-semibold text-center py-1 hidden shadow-inner">
-        <i class="fa-solid fa-arrows-rotate animate-spin mr-1"></i> Menyinkronkan data dengan Cloud Database...
+            <!-- Bottom Section: Daftar Tugas & Deadline Hari Ini -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <i class="fa-solid fa-list-check"></i> Daftar Tugas & Deadline Hari Ini
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table" id="employeeTaskTable">
+                        <thead>
+                            <tr>
+                                <th>Judul Tugas</th>
+                                <th>Ditugaskan Kepada</th>
+                                <th>Deskripsi Pekerjaan</th>
+                                <th>Deadline</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="employeeTaskTableBody">
+                            <tr>
+                                <td colspan="5" style="text-align: center; color: var(--text-muted);">Memuat tugas...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ========================================== -->
+        <!-- PORTAL ADMIN VIEW                          -->
+        <!-- ========================================== -->
+        <div id="adminView" class="view-section">
+            
+            <!-- Admin Header Summary Stats -->
+            <div class="card" style="background: linear-gradient(135deg, var(--maroon-dark) 0%, var(--maroon-primary) 100%); color: white;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                    <div>
+                        <h2 style="font-family: 'Cinzel', serif; color: var(--gold-light);">Dashboard Administrasi HWL Law Firm</h2>
+                        <p style="font-size: 0.88rem; opacity: 0.9;">Pengelolaan Presensi, Data Karyawan, Pengaturan Jam Kerja & Laporan</p>
+                    </div>
+                    <div style="display: flex; gap: 0.6rem;">
+                        <button class="btn btn-gold" onclick="openAdminSettingsModal()">
+                            <i class="fa-solid fa-gear"></i> Setting Jam Kerja & Akun Admin
+                        </button>
+                        <button class="btn btn-outline" onclick="logoutAdmin()">
+                            <i class="fa-solid fa-right-from-bracket"></i> Keluar Portal
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Grid Summary Cards -->
+            <div class="grid-4" style="margin-bottom: 1.8rem;">
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
+                    <div>
+                        <div class="stat-val" id="statTotalEmployees">0</div>
+                        <div class="stat-lbl">Total Karyawan</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: #27ae60;"><i class="fa-solid fa-user-check"></i></div>
+                    <div>
+                        <div class="stat-val" id="statHadirToday">0</div>
+                        <div class="stat-lbl">Hadir Hari Ini</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: #f39c12;"><i class="fa-solid fa-notes-medical"></i></div>
+                    <div>
+                        <div class="stat-val" id="statIzinToday">0</div>
+                        <div class="stat-lbl">Izin / Sakit</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: #2980b9;"><i class="fa-solid fa-tasks"></i></div>
+                    <div>
+                        <div class="stat-val" id="statPendingTasks">0</div>
+                        <div class="stat-lbl">Tugas Active</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab Buttons Inside Admin -->
+            <div style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; overflow-x: auto;">
+                <button class="btn btn-gold admin-tab-btn active" onclick="switchAdminSubTab('rekapSubTab', this)">
+                    <i class="fa-solid fa-table"></i> Rekap Laporan Absensi
+                </button>
+                <button class="btn btn-outline admin-tab-btn" onclick="switchAdminSubTab('karyawanSubTab', this)" style="color: var(--maroon-primary); border-color: var(--maroon-primary);">
+                    <i class="fa-solid fa-user-plus"></i> Kelola Data Karyawan
+                </button>
+                <button class="btn btn-outline admin-tab-btn" onclick="switchAdminSubTab('tugasSubTab', this)" style="color: var(--maroon-primary); border-color: var(--maroon-primary);">
+                    <i class="fa-solid fa-list-check"></i> Input Tugas & Deadline
+                </button>
+                <button class="btn btn-outline admin-tab-btn" onclick="switchAdminSubTab('izinSubTab', this)" style="color: var(--maroon-primary); border-color: var(--maroon-primary);">
+                    <i class="fa-solid fa-envelope-open-text"></i> Verifikasi Izin & Sakit
+                </button>
+            </div>
+
+            <!-- SUB TAB 1: REKAP ABSENSI -->
+            <div id="rekapSubTab" class="admin-sub-tab">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fa-solid fa-clock-rotate-left"></i> Rekapitulasi Presensi Karyawan (Detail Detik, Menit, Jam, Hari, Tanggal, Agenda)
+                        </div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button class="btn btn-gold btn-sm" onclick="exportToWordDoc()">
+                                <i class="fa-solid fa-file-word"></i> Download Rekap (.doc / Word)
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table" id="rekapAttendanceTable">
+                            <thead>
+                                <tr>
+                                    <th>Hari / Tanggal</th>
+                                    <th>Waktu Precise (Jam:Mnt:Dtk)</th>
+                                    <th>NIP & Nama Karyawan</th>
+                                    <th>Jabatan</th>
+                                    <th>Agenda Kegiatan</th>
+                                    <th>Lokasi GPS</th>
+                                    <th>Status Shift</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rekapAttendanceTableBody">
+                                <tr>
+                                    <td colspan="8" style="text-align: center;">Memuat data absensi...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SUB TAB 2: KELOLA KARYAWAN -->
+            <div id="karyawanSubTab" class="admin-sub-tab" style="display: none;">
+                <div class="grid-2">
+                    <!-- Form Tambah Karyawan -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title"><i class="fa-solid fa-user-plus"></i> Tambah / Edit Karyawan</div>
+                        </div>
+                        <form id="addEmployeeForm" onsubmit="handleSaveEmployee(event)">
+                            <input type="hidden" id="editEmpId">
+                            <div class="form-group">
+                                <label class="form-label">NIP / ID Karyawan</label>
+                                <input type="text" class="form-control" id="empNip" placeholder="Contoh: HWL-2026-001" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Nama Lengkap & Gelar</label>
+                                <input type="text" class="form-control" id="empName" placeholder="Contoh: Budi Santoso, S.H., M.H." required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Jabatan</label>
+                                <select class="form-control" id="empRole" required>
+                                    <option value="Advokat Utama / Partner">Advokat Utama / Partner</option>
+                                    <option value="Senior Associate">Senior Associate</option>
+                                    <option value="Junior Associate">Junior Associate</option>
+                                    <option value="Paralegal">Paralegal</option>
+                                    <option value="Staff Administrasi & Keuangan">Staff Administrasi & Keuangan</option>
+                                    <option value="IT & Operations">IT & Operations</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-gold" style="width: 100%;">
+                                <i class="fa-solid fa-floppy-disk"></i> Simpan Data Karyawan
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Daftar Karyawan -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title"><i class="fa-solid fa-users"></i> Daftar Karyawan Terdaftar</div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>NIP</th>
+                                        <th>Nama</th>
+                                        <th>Jabatan</th>
+                                        <th>Barcode/QR</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="employeeAdminTableBody">
+                                    <!-- Populated dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SUB TAB 3: INPUT TUGAS & DEADLINE -->
+            <div id="tugasSubTab" class="admin-sub-tab" style="display: none;">
+                <div class="grid-2">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title"><i class="fa-solid fa-plus"></i> Tambah Tugas & Deadline Pekerjaan</div>
+                        </div>
+                        <form id="addTaskForm" onsubmit="handleAddTaskSubmit(event)">
+                            <div class="form-group">
+                                <label class="form-label">Judul Tugas / Pekerjaan Hukum</label>
+                                <input type="text" class="form-control" id="taskTitle" placeholder="Contoh: Menyusun Eksepsi Perkara No. 1372/Pdt.G/2026" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Tugaskan Kepada</label>
+                                <select class="form-control" id="taskEmployeeSelect" required>
+                                    <!-- Populated -->
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Deadline Tanggal & Jam</label>
+                                <input type="datetime-local" class="form-control" id="taskDeadline" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Detail Instraksi Pekerjaan</label>
+                                <textarea class="form-control" id="taskDesc" placeholder="Tuliskan rincian instruksi pekerjaan..." required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-gold" style="width: 100%;">
+                                <i class="fa-solid fa-paper-plane"></i> Assign Tugas
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title"><i class="fa-solid fa-tasks"></i> Master Daftar Tugas</div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Tugas</th>
+                                        <th>Penerima</th>
+                                        <th>Deadline</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="adminTaskTableBody">
+                                    <!-- Dynamic -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SUB TAB 4: VERIFIKASI IZIN & SAKIT -->
+            <div id="izinSubTab" class="admin-sub-tab" style="display: none;">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title"><i class="fa-solid fa-envelope-open-text"></i> Permohonan Izin & Surat Keterangan Sakit</div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Tanggal Request</th>
+                                    <th>Nama Karyawan</th>
+                                    <th>Jenis Izin</th>
+                                    <th>Keterangan</th>
+                                    <th>Lampiran Surat Sakit</th>
+                                    <th>Status</th>
+                                    <th>Aksi Konfirmasi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminLeaveTableBody">
+                                <!-- Dynamic -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ========================================== -->
+        <!-- WALL BARCODE VIEW (PRINTABLE)              -->
+        <!-- ========================================== -->
+        <div id="wallBarcodeView" class="view-section">
+            <div class="card" style="text-align: center; max-width: 650px; margin: 0 auto;" id="printable-wall-qr">
+                <div style="border: 4px double var(--gold-primary); padding: 2.5rem; border-radius: 12px; background: #FFFDF8;">
+                    <div class="brand-logo" style="margin: 0 auto 1rem auto; width: 64px; height: 64px; font-size: 2rem;">
+                        <i class="fa-solid fa-scale-balanced"></i>
+                    </div>
+                    <h1 style="font-family: 'Cinzel', serif; color: var(--maroon-primary); font-size: 1.8rem; margin-bottom: 0.3rem;">KANTOR HUKUM HWL LAW FIRM</h1>
+                    <p style="color: var(--text-muted); font-size: 0.9rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">BARCODE PRESENSI RESMI KANTOR</p>
+                    <hr style="border: 0; border-top: 2px solid var(--gold-primary); margin: 1.5rem 0;">
+
+                    <div id="officeWallQRCode" style="display: inline-block; padding: 1.2rem; background: white; border: 2px solid var(--maroon-primary); border-radius: 10px;"></div>
+
+                    <p style="margin-top: 1.5rem; font-size: 0.95rem; color: var(--maroon-dark); font-weight: 600;">
+                        PETUNJUK: Tempelkan Barcode ini di Dinding Pintu Masuk Kantor.<br>Karyawan wajib melakukan scan melalui Aplikasi HP masing-masing saat tiba & pulang.
+                    </p>
+                    <div style="margin-top: 1.5rem;" class="no-print">
+                        <button class="btn btn-gold" onclick="window.print()"><i class="fa-solid fa-print"></i> Cetak / Print Barcode Dinding</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 
-    <!-- Main Container -->
-    <main id="app" class="flex-grow max-w-7xl w-full mx-auto p-4 md:p-6">
-        <!-- Rendered by JS -->
-    </main>
+    <!-- MODAL: LOGIN ADMIN -->
+    <div class="modal" id="adminLoginModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div><i class="fa-solid fa-lock"></i> Login Admin HWL Law Firm</div>
+                <button class="close-btn" onclick="closeAdminLoginModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div style="background: #FAF4E8; border-left: 4px solid var(--gold-primary); padding: 0.8rem; font-size: 0.82rem; margin-bottom: 1.2rem; color: var(--maroon-dark);">
+                    <strong>Default Login:</strong><br>
+                    Email: <span id="lblDefaultEmail">admin@hwllawfirm.com</span><br>
+                    Password: <span id="lblDefaultPass">admin123</span>
+                </div>
+                <form id="adminLoginForm" onsubmit="handleAdminLogin(event)">
+                    <div class="form-group">
+                        <label class="form-label">Gmail / Email Admin</label>
+                        <input type="email" class="form-control" id="inputAdminEmail" value="admin@hwllawfirm.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Password</label>
+                        <input type="password" class="form-control" id="inputAdminPass" value="admin123" required>
+                    </div>
+                    
+                    <div style="display: flex; gap: 0.8rem; margin-top: 1.5rem;">
+                        <button type="button" class="btn btn-gold" style="flex: 1;" onclick="quickBypassAdminLogin()">
+                            <i class="fa-solid fa-bolt"></i> Login Langsung (Default)
+                        </button>
+                        <button type="submit" class="btn btn-maroon" style="flex: 1;">
+                            <i class="fa-solid fa-right-to-bracket"></i> Login Manual
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
-    <!-- Footer -->
-    <footer class="bg-maroon-dark text-gold py-4 text-center text-xs border-t border-gold/30">
-        <p>&copy; 2026 HWL Law Firm. Real-Time Cloud Database Active.</p>
+    <!-- MODAL: ADMIN SETTINGS & CHANGE CREDENTIALS -->
+    <div class="modal" id="adminSettingsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div><i class="fa-solid fa-sliders"></i> Pengaturan Jam Kerja & Kredensial Admin</div>
+                <button class="close-btn" onclick="closeAdminSettingsModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <h4 style="color: var(--maroon-primary); margin-bottom: 0.8rem; font-family: 'Cinzel', serif;">1. Jam Kerja Presensi</h4>
+                <div class="form-group">
+                    <label class="form-label">Jam Masuk Kantor</label>
+                    <input type="time" class="form-control" id="settingJamMasuk" value="08:00">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Jam Pulang Kantor</label>
+                    <input type="time" class="form-control" id="settingJamPulang" value="17:00">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Toleransi Keterlambatan (Menit)</label>
+                    <input type="number" class="form-control" id="settingToleransi" value="15">
+                </div>
+
+                <hr style="margin: 1.5rem 0; border: 0; border-top: 1px solid var(--border-color);">
+
+                <h4 style="color: var(--maroon-primary); margin-bottom: 0.8rem; font-family: 'Cinzel', serif;">2. Ganti Admin / Kredensial Login</h4>
+                <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.8rem;">
+                    *Verifikasi Email & Password Admin Lama Diperlukan Sebelum Mengganti Admin Baru.
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Password Lama Admin (Verifikasi)</label>
+                    <input type="password" class="form-control" id="verifyOldPass" placeholder="Masukkan password saat ini">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Gmail Admin Baru</label>
+                    <input type="email" class="form-control" id="newAdminEmail" placeholder="email.baru@hwllawfirm.com">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Password Admin Baru</label>
+                    <input type="password" class="form-control" id="newAdminPass" placeholder="Password baru">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeAdminSettingsModal()">Batal</button>
+                <button class="btn btn-gold" onclick="saveAdminSettings()"><i class="fa-solid fa-save"></i> Simpan Semua Pengaturan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: PREVIEW FOTO SURAT SAKIT -->
+    <div class="modal" id="imagePreviewModal">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <div><i class="fa-solid fa-file-medical"></i> Lampiran Surat Keterangan Sakit / Bukti</div>
+                <button class="close-btn" onclick="closeImageModal()">&times;</button>
+            </div>
+            <div class="modal-body" style="text-align: center;">
+                <img id="fullImagePreview" style="max-width: 100%; height: auto; border-radius: 8px; border: 2px solid var(--gold-primary);">
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer>
+        &copy; 2026 Kantor Hukum HWL Law Firm & Partners. All Rights Reserved. | Real-Time Attendance Engine
     </footer>
 
-    <!-- Logic Script -->
+    <!-- SCRIPT APPLICATION CODE -->
     <script>
-        // =========================================================================
-        // MASUKKAN URL GOOGLE APPS SCRIPT (WEB APP) ANDA DI SINI
-        // =========================================================================
-        const GOOGLE_SCRIPT_URL = "PASTE_URL_WEB_APP_GOOGLE_SHEETS_DI_SINI";
-
-        const DEFAULT_DATA = {
-            admin: {
-                email: 'admin@hwllawfirm.com',
-                password: 'admin123'
-            },
+        // ----------------------------------------------------
+        // CONFIG & CONSTANTS
+        // ----------------------------------------------------
+        const DB_BASE_URL = "https://absen-hwl-law-firm-default-rtdb.asia-southeast1.firebasedatabase.app";
+        
+        let state = {
+            adminLoggedIn: false,
             settings: {
-                officeQR: 'HWL-OFFICE-CHECKIN-2026'
+                adminEmail: "admin@hwllawfirm.com",
+                adminPass: "admin123",
+                jamMasuk: "08:00",
+                jamPulang: "17:00",
+                toleransi: 15
             },
             employees: [],
             attendance: [],
-            leaves: []
+            tasks: [],
+            leaves: [],
+            currentGPS: { lat: null, lng: null, address: "Belum terdeteksi" },
+            scannerStream: null
         };
 
-        function getDB() {
-            const data = localStorage.getItem('hwl_law_firm_db');
-            return data ? JSON.parse(data) : DEFAULT_DATA;
-        }
-
-        function saveLocalDB(data) {
-            localStorage.setItem('hwl_law_firm_db', JSON.stringify(data));
-        }
-
-        // FUNGSI SINKRONISASI OTOMATIS DARI GOOGLE SHEETS CLOUD
-        let isSyncing = false;
-        async function syncOnlineData() {
-            if (isSyncing || !GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL.includes("PASTE_URL")) return;
-            isSyncing = true;
+        // ----------------------------------------------------
+        // INITIALIZATION
+        // ----------------------------------------------------
+        window.addEventListener('DOMContentLoaded', () => {
+            initClock();
+            initOfficeWallQR();
+            fetchGPSLocation();
+            syncDataFromFirebase();
             
-            const banner = document.getElementById('sync-banner');
-            if (banner) banner.classList.remove('hidden');
+            // Auto sync poll every 5 seconds for real-time updates across multi-devices
+            setInterval(syncDataFromFirebase, 5000);
+        });
 
-            try {
-                const response = await fetch(GOOGLE_SCRIPT_URL);
-                const result = await response.json();
+        // Live Clock
+        function initClock() {
+            setInterval(() => {
+                const now = new Date();
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                const seconds = String(now.getSeconds()).padStart(2, '0');
+                
+                const clockElem = document.getElementById('liveClockDisplay');
+                if(clockElem) clockElem.innerText = `${hours}:${minutes}:${seconds}`;
 
-                if (result.status === 'success') {
-                    const db = getDB();
-                    
-                    // Perbarui memori dengan data Cloud
-                    db.employees = Array.isArray(result.employees) ? result.employees : [];
-                    db.attendance = Array.isArray(result.attendance) ? result.attendance : [];
-                    db.leaves = Array.isArray(result.leaves) ? result.leaves : [];
+                const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+                const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+                
+                const dayName = days[now.getDay()];
+                const dateNum = now.getDate();
+                const monthName = months[now.getMonth()];
+                const yearNum = now.getFullYear();
 
-                    saveLocalDB(db);
-                    render();
-                }
-            } catch (err) {
-                console.warn("Mode Offline/Cache digunakan sementara.");
-            } finally {
-                isSyncing = false;
-                if (banner) banner.classList.add('hidden');
-            }
+                const dateElem = document.getElementById('liveDateDisplay');
+                if(dateElem) dateElem.innerText = `${dayName}, ${dateNum} ${monthName} ${yearNum}`;
+            }, 1000);
         }
 
-        // Session Management
-        let session = JSON.parse(sessionStorage.getItem('hwl_session')) || { role: null, user: null };
-
-        function setSession(role, user) {
-            session = { role, user };
-            sessionStorage.setItem('hwl_session', JSON.stringify(session));
-            render();
-        }
-
-        function logout() {
-            sessionStorage.removeItem('hwl_session');
-            session = { role: null, user: null };
-            render();
-        }
-
-        // Core App Renderer
-        function render() {
-            const db = getDB();
-            const app = document.getElementById('app');
-            const headerInfo = document.getElementById('header-user-info');
-
-            if (!session.role) {
-                headerInfo.innerHTML = `<span class="bg-gold/20 text-gold px-2 py-1 rounded border border-gold/40"><i class="fa-solid fa-cloud-check mr-1"></i>Cloud Online</span>`;
-                app.innerHTML = renderLoginScreen(db);
-            } else if (session.role === 'admin') {
-                headerInfo.innerHTML = `
-                    <p class="font-bold text-gold">${session.user.email}</p>
-                    <button onclick="logout()" class="text-red-300 hover:text-white underline text-[10px]">Keluar Admin</button>
-                `;
-                app.innerHTML = renderAdminPortal(db);
-            } else if (session.role === 'employee') {
-                headerInfo.innerHTML = `
-                    <p class="font-bold text-gold">${session.user.name}</p>
-                    <button onclick="logout()" class="text-red-300 hover:text-white underline text-[10px]">Keluar Portal</button>
-                `;
-                app.innerHTML = renderEmployeePortal(db);
-            }
-        }
-
-        // ==========================================
-        // 1. TAMPILAN LOGIN
-        // ==========================================
-        function renderLoginScreen(db) {
-            return `
-                <div class="max-w-md mx-auto my-8 bg-white rounded-2xl shadow-2xl border-2 border-gold overflow-hidden">
-                    <div class="maroon-gradient p-6 text-center border-b border-gold/30">
-                        <i class="fa-solid fa-user-shield text-gold text-4xl mb-2"></i>
-                        <h2 class="text-2xl font-bold text-white tracking-wide">Portal HWL Law Firm</h2>
-                        <p class="text-gold-light text-xs mt-1">Sistem Absensi Online & Terintegrasi Cloud</p>
-                    </div>
-
-                    <div class="p-6">
-                        <div class="flex bg-gray-100 rounded-xl p-1 mb-6 border">
-                            <button onclick="toggleLoginTab('employee')" id="tab-emp-btn" class="flex-1 py-2 text-sm font-bold rounded-lg bg-maroon text-gold shadow">Portal Karyawan</button>
-                            <button onclick="toggleLoginTab('admin')" id="tab-admin-btn" class="flex-1 py-2 text-sm font-bold text-gray-500 hover:text-maroon">Portal Admin</button>
-                        </div>
-
-                        <!-- Form Karyawan -->
-                        <div id="form-employee-login" class="space-y-4">
-                            <div>
-                                <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Pilih Karyawan Terdaftar</label>
-                                <select id="login-emp-id" class="w-full px-4 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-maroon focus:outline-none">
-                                    ${db.employees.length === 0 
-                                        ? `<option value="">Memuat data dari Cloud / Belum ada karyawan...</option>` 
-                                        : db.employees.map(e => `<option value="${e.id}">${e.name} (${e.id})</option>`).join('')}
-                                </select>
-                            </div>
-                            <button onclick="processEmployeeLogin()" class="w-full bg-gold hover:bg-gold-dark text-maroon-dark font-bold py-3 rounded-lg border border-maroon shadow transition">
-                                <i class="fa-solid fa-user-check mr-2"></i>Masuk Portal Absen
-                            </button>
-                        </div>
-
-                        <!-- Form Admin -->
-                        <div id="form-admin-login" class="space-y-4 hidden">
-                            <div>
-                                <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Email Admin</label>
-                                <input type="email" id="login-admin-email" value="${db.admin.email}" class="w-full px-4 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-maroon focus:outline-none">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Password Admin</label>
-                                <input type="password" id="login-admin-pass" value="${db.admin.password}" class="w-full px-4 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-maroon focus:outline-none">
-                            </div>
-                            <button onclick="processAdminLogin()" class="w-full maroon-gradient text-gold font-bold py-3 rounded-lg border border-gold shadow transition">
-                                <i class="fa-solid fa-right-to-bracket mr-2"></i>Masuk Portal Admin
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
-
-        function toggleLoginTab(tab) {
-            const adminBtn = document.getElementById('tab-admin-btn');
-            const empBtn = document.getElementById('tab-emp-btn');
-            const formAdmin = document.getElementById('form-admin-login');
-            const formEmp = document.getElementById('form-employee-login');
-
-            if (tab === 'admin') {
-                adminBtn.className = "flex-1 py-2 text-sm font-bold rounded-lg bg-maroon text-gold shadow";
-                empBtn.className = "flex-1 py-2 text-sm font-bold text-gray-500 hover:text-maroon";
-                formAdmin.classList.remove('hidden');
-                formEmp.classList.add('hidden');
-            } else {
-                empBtn.className = "flex-1 py-2 text-sm font-bold rounded-lg bg-maroon text-gold shadow";
-                adminBtn.className = "flex-1 py-2 text-sm font-bold text-gray-500 hover:text-maroon";
-                formEmp.classList.remove('hidden');
-                formAdmin.classList.add('hidden');
-            }
-        }
-
-        function processAdminLogin() {
-            const db = getDB();
-            const email = document.getElementById('login-admin-email').value;
-            const pass = document.getElementById('login-admin-pass').value;
-
-            if (email === db.admin.email && pass === db.admin.password) {
-                setSession('admin', { email: db.admin.email });
-            } else {
-                alert('Gagal Login: Email atau Password Admin Salah!');
-            }
-        }
-
-        function processEmployeeLogin() {
-            const db = getDB();
-            const empId = document.getElementById('login-emp-id').value;
-            const emp = db.employees.find(e => String(e.id) === String(empId));
-
-            if (emp) {
-                setSession('employee', emp);
-            } else {
-                alert('Pilih nama karyawan terdaftar!');
-            }
-        }
-
-        // ==========================================
-        // 2. PORTAL ADMIN
-        // ==========================================
-        let adminTab = 'dashboard';
-
-        function renderAdminPortal(db) {
-            return `
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                    <div class="bg-white rounded-xl shadow border border-gold/30 p-4 space-y-2">
-                        <div class="p-3 maroon-gradient rounded-lg text-gold text-center font-bold mb-4">
-                            <i class="fa-solid fa-user-gear mr-2"></i>MENU ADMIN
-                        </div>
-                        <button onclick="switchAdminTab('dashboard')" class="w-full text-left px-4 py-2.5 rounded-lg font-bold text-sm ${adminTab === 'dashboard' ? 'bg-maroon text-gold' : 'hover:bg-gray-100 text-gray-700'}">
-                            <i class="fa-solid fa-chart-line w-6"></i>Dashboard
-                        </button>
-                        <button onclick="switchAdminTab('employees')" class="w-full text-left px-4 py-2.5 rounded-lg font-bold text-sm ${adminTab === 'employees' ? 'bg-maroon text-gold' : 'hover:bg-gray-100 text-gray-700'}">
-                            <i class="fa-solid fa-users w-6"></i>Kelola Karyawan
-                        </button>
-                        <button onclick="switchAdminTab('attendance')" class="w-full text-left px-4 py-2.5 rounded-lg font-bold text-sm ${adminTab === 'attendance' ? 'bg-maroon text-gold' : 'hover:bg-gray-100 text-gray-700'}">
-                            <i class="fa-solid fa-clipboard-user w-6"></i>Rekap Absensi
-                        </button>
-                        <button onclick="switchAdminTab('leaves')" class="w-full text-left px-4 py-2.5 rounded-lg font-bold text-sm ${adminTab === 'leaves' ? 'bg-maroon text-gold' : 'hover:bg-gray-100 text-gray-700'}">
-                            <i class="fa-solid fa-envelope-open-text w-6"></i>Izin / Sakit
-                        </button>
-                    </div>
-
-                    <div class="md:col-span-3">
-                        ${renderAdminTabContent(db)}
-                    </div>
-                </div>
-            `;
-        }
-
-        function switchAdminTab(tab) {
-            adminTab = tab;
-            render();
-        }
-
-        function renderAdminTabContent(db) {
-            if (adminTab === 'dashboard') {
-                return `
-                    <div class="space-y-6">
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div class="bg-white p-5 rounded-xl shadow border-l-4 border-maroon">
-                                <p class="text-xs text-gray-500 font-bold uppercase">Total Karyawan</p>
-                                <h3 class="text-3xl font-bold text-maroon mt-1">${db.employees.length} Orang</h3>
-                            </div>
-                            <div class="bg-white p-5 rounded-xl shadow border-l-4 border-gold">
-                                <p class="text-xs text-gray-500 font-bold uppercase">Total Absensi Cloud</p>
-                                <h3 class="text-3xl font-bold text-gold-dark mt-1">${db.attendance.length} Record</h3>
-                            </div>
-                            <div class="bg-white p-5 rounded-xl shadow border-l-4 border-maroon-light">
-                                <p class="text-xs text-gray-500 font-bold uppercase">Permohonan Izin</p>
-                                <h3 class="text-3xl font-bold text-maroon-light mt-1">${db.leaves.length} Pengajuan</h3>
-                            </div>
-                        </div>
-
-                        <div class="bg-white rounded-xl shadow p-6 border border-gold/40 text-center">
-                            <h3 class="font-bold text-lg text-maroon mb-2"><i class="fa-solid fa-qrcode mr-2 text-gold"></i>Barcode QR Absensi Utama Kantor</h3>
-                            <p class="text-xs text-gray-600 mb-4">Cetak QR Code ini dan tempelkan di area pintu masuk kantor HWL Law Firm.</p>
-                            <div class="inline-block bg-gray-50 p-4 rounded-xl border border-dashed border-gold">
-                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${db.settings.officeQR}" class="mx-auto rounded shadow bg-white p-2 border">
-                                <p class="font-mono text-sm font-bold text-maroon mt-3">${db.settings.officeQR}</p>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }
-
-            if (adminTab === 'employees') {
-                return `
-                    <div class="bg-white rounded-xl shadow p-6 border border-gold/30">
-                        <div class="flex justify-between items-center mb-6">
-                            <h3 class="font-bold text-lg text-maroon"><i class="fa-solid fa-users mr-2"></i>Daftar Karyawan Terdaftar (Cloud Database)</h3>
-                            <button onclick="openModalAddEmp()" class="bg-maroon text-gold px-4 py-2 rounded-lg font-bold text-xs hover:bg-maroon-dark shadow">
-                                <i class="fa-solid fa-user-plus mr-1"></i>Tambah Karyawan
-                            </button>
-                        </div>
-
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left text-xs border-collapse">
-                                <thead>
-                                    <tr class="bg-maroon text-gold font-bold">
-                                        <th class="p-3 border">ID & Nama</th>
-                                        <th class="p-3 border">Email</th>
-                                        <th class="p-3 border">No. Telp</th>
-                                        <th class="p-3 border text-center">Aksi</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    ${db.employees.length === 0 
-                                        ? `<tr><td colspan="4" class="p-4 text-center text-gray-500">Belum ada karyawan. Klik 'Tambah Karyawan' di atas.</td></tr>`
-                                        : db.employees.map(e => `
-                                            <tr class="hover:bg-gray-50 border-b">
-                                                <td class="p-3 font-bold">${e.name}<br><span class="text-[10px] text-gray-500 font-normal">${e.id}</span></td>
-                                                <td class="p-3">${e.email}</td>
-                                                <td class="p-3">${e.phone}</td>
-                                                <td class="p-3 text-center">
-                                                    <button onclick="deleteEmployee('${e.id}')" class="text-red-600 hover:text-red-800 font-bold">
-                                                        <i class="fa-solid fa-trash-can"></i> Hapus
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        `).join('')}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                `;
-            }
-
-            if (adminTab === 'attendance') {
-                return `
-                    <div class="bg-white rounded-xl shadow p-6 border border-gold/30">
-                        <div class="flex justify-between items-center mb-6">
-                            <div>
-                                <h3 class="font-bold text-lg text-maroon"><i class="fa-solid fa-clipboard-user mr-2"></i>Rekap Absensi Real-Time Cloud</h3>
-                                <p class="text-[11px] text-green-600 font-semibold mt-0.5"><i class="fa-solid fa-circle text-[8px] animate-pulse mr-1"></i>Data ter-update otomatis dari HP Karyawan</p>
-                            </div>
-                            <button onclick="exportAttendanceToWord()" class="bg-gold-dark text-white px-4 py-2 rounded-lg font-bold text-xs hover:bg-gold shadow">
-                                <i class="fa-solid fa-file-word mr-1"></i>Download MS Word
-                            </button>
-                        </div>
-
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left text-xs border-collapse">
-                                <thead>
-                                    <tr class="bg-maroon text-gold font-bold">
-                                        <th class="p-3 border">Waktu Absen</th>
-                                        <th class="p-3 border">Nama Karyawan</th>
-                                        <th class="p-3 border">Agenda Kegiatan Hari Ini</th>
-                                        <th class="p-3 border">Lokasi GPS</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    ${db.attendance.length === 0 ? `<tr><td colspan="4" class="p-4 text-center text-gray-500">Belum ada catatan absensi masuk.</td></tr>` : 
-                                        db.attendance.map(a => `
-                                            <tr class="hover:bg-gray-50 border-b">
-                                                <td class="p-3 font-mono font-bold text-maroon">${a.timestamp}</td>
-                                                <td class="p-3 font-bold">${a.name}</td>
-                                                <td class="p-3">${a.agenda}</td>
-                                                <td class="p-3 text-[10px] text-blue-600 font-semibold">${a.location}</td>
-                                            </tr>
-                                        `).join('')}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                `;
-            }
-
-            if (adminTab === 'leaves') {
-                return `
-                    <div class="bg-white rounded-xl shadow p-6 border border-gold/30">
-                        <h3 class="font-bold text-lg text-maroon mb-6"><i class="fa-solid fa-envelope-open-text mr-2"></i>Data Pengajuan Izin / Sakit</h3>
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left text-xs border-collapse">
-                                <thead>
-                                    <tr class="bg-maroon text-gold font-bold">
-                                        <th class="p-3 border">Nama Karyawan</th>
-                                        <th class="p-3 border">Tipe</th>
-                                        <th class="p-3 border">Alasan / Catatan</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    ${db.leaves.length === 0 ? `<tr><td colspan="3" class="p-4 text-center text-gray-500">Belum ada pengajuan izin/sakit.</td></tr>` : 
-                                        db.leaves.map(l => `
-                                            <tr class="hover:bg-gray-50 border-b">
-                                                <td class="p-3 font-bold">${l.name}</td>
-                                                <td class="p-3"><span class="px-2 py-1 rounded text-[10px] font-bold ${l.type === 'Sakit' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'}">${l.type}</span></td>
-                                                <td class="p-3">${l.reason}</td>
-                                            </tr>
-                                        `).join('')}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                `;
-            }
-        }
-
-        // Tambah Karyawan Baru
-        async function openModalAddEmp() {
-            const name = prompt("Nama Lengkap Karyawan (beserta Gelar):");
-            if (!name) return;
-            const email = prompt("Email Karyawan:") || '-';
-            const phone = prompt("Nomor WhatsApp:") || '-';
-
-            const db = getDB();
-            const id = `HWL-00${db.employees.length + 1}`;
-            const newEmp = { id, name, email, phone, barcode: id };
-
-            db.employees.push(newEmp);
-            saveLocalDB(db);
-            render();
-
-            try {
-                await fetch(GOOGLE_SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'add_employee', ...newEmp })
+        // Generate Master Office Wall QR
+        function initOfficeWallQR() {
+            const wallQrDiv = document.getElementById('officeWallQRCode');
+            if(wallQrDiv) {
+                wallQrDiv.innerHTML = "";
+                new QRCode(wallQrDiv, {
+                    text: "HWL_LAW_FIRM_OFFICE_OFFICIAL_QR_2026",
+                    width: 200,
+                    height: 200,
+                    colorDark : "#6B0D18",
+                    colorLight : "#ffffff",
+                    correctLevel : QRCode.CorrectLevel.H
                 });
-                alert(`Karyawan ${name} berhasil didaftarkan ke Cloud!`);
-                syncOnlineData();
-            } catch (e) {
-                alert("Gagal terhubung ke Cloud, tersimpan di memori lokal.");
             }
         }
 
-        // Hapus Karyawan
-        async function deleteEmployee(id) {
-            if (confirm(`Yakin hapus karyawan ${id} dari Cloud Database?`)) {
-                const db = getDB();
-                db.employees = db.employees.filter(e => String(e.id) !== String(id));
-                saveLocalDB(db);
-                render();
+        // ----------------------------------------------------
+        // FIREBASE REALTIME DATABASE SYNC (REST API)
+        // ----------------------------------------------------
+        async function syncDataFromFirebase() {
+            try {
+                // Fetch Settings
+                const resSettings = await fetch(`${DB_BASE_URL}/settings.json`);
+                if(resSettings.ok) {
+                    const settingsData = await resSettings.json();
+                    if(settingsData) {
+                        state.settings = { ...state.settings, ...settingsData };
+                        document.getElementById('lblDefaultEmail').innerText = state.settings.adminEmail;
+                        document.getElementById('lblDefaultPass').innerText = state.settings.adminPass;
+                    }
+                }
 
-                try {
-                    await fetch(GOOGLE_SCRIPT_URL, {
-                        method: 'POST',
-                        mode: 'no-cors',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ action: 'delete_employee', id: id })
-                    });
-                    alert(`Karyawan terhapus dari Cloud Database!`);
-                    syncOnlineData();
-                } catch (e) {
-                    alert("Gagal memperbarui Cloud database.");
+                // Fetch Employees
+                const resEmp = await fetch(`${DB_BASE_URL}/karyawan.json`);
+                if(resEmp.ok) {
+                    const empData = await resEmp.json();
+                    state.employees = empData ? Object.values(empData) : getSeedEmployees();
+                    if(!empData) await saveDataToFirebase('karyawan', state.employees);
+                    renderEmployeeDropdowns();
+                    renderEmployeeAdminTable();
+                }
+
+                // Fetch Attendance Log
+                const resAtt = await fetch(`${DB_BASE_URL}/absensi.json`);
+                if(resAtt.ok) {
+                    const attData = await resAtt.json();
+                    state.attendance = attData ? Object.values(attData) : [];
+                    renderAttendanceRekapTable();
+                }
+
+                // Fetch Tasks
+                const resTasks = await fetch(`${DB_BASE_URL}/tugas_deadline.json`);
+                if(resTasks.ok) {
+                    const taskData = await resTasks.json();
+                    state.tasks = taskData ? Object.values(taskData) : [];
+                    renderTasksTables();
+                }
+
+                // Fetch Leaves
+                const resLeaves = await fetch(`${DB_BASE_URL}/perizinan.json`);
+                if(resLeaves.ok) {
+                    const leaveData = await resLeaves.json();
+                    state.leaves = leaveData ? Object.values(leaveData) : [];
+                    renderLeavesTable();
+                }
+
+                updateStatsCount();
+                document.getElementById('syncStatus').style.background = 'rgba(46, 204, 113, 0.2)';
+            } catch (err) {
+                console.warn('Firebase Sync Notice:', err);
+            }
+        }
+
+        async function saveDataToFirebase(endpoint, data) {
+            try {
+                await fetch(`${DB_BASE_URL}/${endpoint}.json`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+            } catch(e) {
+                console.error("Firebase save failed:", e);
+            }
+        }
+
+        function getSeedEmployees() {
+            return [
+                { id: "EMP-01", nip: "HWL-2026-001", nama: "Bambang HWL, S.H., M.H.", jabatan: "Advokat Utama / Partner", foto: "" },
+                { id: "EMP-02", nip: "HWL-2026-002", nama: "Siti Rahmawati, S.H.", jabatan: "Senior Associate", foto: "" },
+                { id: "EMP-03", nip: "HWL-2026-003", nama: "Andi Wijaya, S.H.", jabatan: "Paralegal", foto: "" }
+            ];
+        }
+
+        // ----------------------------------------------------
+        // UI SWITCHING
+        // ----------------------------------------------------
+        function switchView(viewId) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.getElementById(viewId).classList.add('active');
+
+            if(viewId !== 'karyawanView') stopCameraScan();
+        }
+
+        function switchAdminSubTab(tabId, btnElem) {
+            document.querySelectorAll('.admin-sub-tab').forEach(el => el.style.display = 'none');
+            document.getElementById(tabId).style.display = 'block';
+
+            document.querySelectorAll('.admin-tab-btn').forEach(btn => {
+                btn.classList.remove('btn-gold');
+                btn.classList.add('btn-outline');
+                btn.style.color = 'var(--maroon-primary)';
+                btn.style.borderColor = 'var(--maroon-primary)';
+            });
+
+            btnElem.classList.remove('btn-outline');
+            btnElem.classList.add('btn-gold');
+            btnElem.style.color = 'var(--maroon-dark)';
+        }
+
+        // ----------------------------------------------------
+        // ADMIN LOGIN & AUTH
+        // ----------------------------------------------------
+        function openAdminLoginModal() {
+            if(state.adminLoggedIn) {
+                switchView('adminView');
+            } else {
+                document.getElementById('adminLoginModal').classList.add('active');
+            }
+        }
+
+        function closeAdminLoginModal() {
+            document.getElementById('adminLoginModal').classList.remove('active');
+        }
+
+        function quickBypassAdminLogin() {
+            // Default instant login
+            state.adminLoggedIn = true;
+            closeAdminLoginModal();
+            switchView('adminView');
+            alert('Login Admin Berhasil (Mode Default Admin)');
+        }
+
+        function handleAdminLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('inputAdminEmail').value;
+            const pass = document.getElementById('inputAdminPass').value;
+
+            if(email === state.settings.adminEmail && pass === state.settings.adminPass) {
+                state.adminLoggedIn = true;
+                closeAdminLoginModal();
+                switchView('adminView');
+            } else {
+                alert('Email atau Password Admin Salah!');
+            }
+        }
+
+        function logoutAdmin() {
+            state.adminLoggedIn = false;
+            switchView('karyawanView');
+            alert('Admin telah keluar.');
+        }
+
+        function openAdminSettingsModal() {
+            document.getElementById('settingJamMasuk').value = state.settings.jamMasuk;
+            document.getElementById('settingJamPulang').value = state.settings.jamPulang;
+            document.getElementById('settingToleransi').value = state.settings.toleransi;
+            document.getElementById('adminSettingsModal').classList.add('active');
+        }
+
+        function closeAdminSettingsModal() {
+            document.getElementById('adminSettingsModal').classList.remove('active');
+        }
+
+        async function saveAdminSettings() {
+            const oldPass = document.getElementById('verifyOldPass').value;
+            const newEmail = document.getElementById('newAdminEmail').value;
+            const newPass = document.getElementById('newAdminPass').value;
+
+            // Check if user is changing credentials
+            if(newEmail || newPass) {
+                if(oldPass !== state.settings.adminPass) {
+                    alert('Verifikasi Password Lama Gagal! Password lama salah.');
+                    return;
+                }
+                if(newEmail) state.settings.adminEmail = newEmail;
+                if(newPass) state.settings.adminPass = newPass;
+            }
+
+            state.settings.jamMasuk = document.getElementById('settingJamMasuk').value;
+            state.settings.jamPulang = document.getElementById('settingJamPulang').value;
+            state.settings.toleransi = parseInt(document.getElementById('settingToleransi').value) || 15;
+
+            await saveDataToFirebase('settings', state.settings);
+            alert('Pengaturan Berhasil Disimpan!');
+            closeAdminSettingsModal();
+            syncDataFromFirebase();
+        }
+
+        // ----------------------------------------------------
+        // GPS GEOLOCATION
+        // ----------------------------------------------------
+        function fetchGPSLocation() {
+            const display = document.getElementById('gpsDisplay');
+            display.value = "Mendapatkan GPS...";
+
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (pos) => {
+                        const lat = pos.coords.latitude.toFixed(6);
+                        const lng = pos.coords.longitude.toFixed(6);
+                        state.currentGPS = { lat, lng, address: `Lat: ${lat}, Lng: ${lng}` };
+                        display.value = `${lat}, ${lng} (Verified GPS)`;
+                    },
+                    (err) => {
+                        state.currentGPS = { lat: -0.507, lng: 101.447, address: "Pekanbaru (Default)" };
+                        display.value = "-0.507, 101.447 (GPS Office Default)";
+                    }
+                );
+            } else {
+                display.value = "GPS tidak didukung browser ini";
+            }
+        }
+
+        // ----------------------------------------------------
+        // CAMERA QR SCANNER
+        // ----------------------------------------------------
+        function startCameraScan() {
+            const scannerContainer = document.getElementById('interactive-scanner');
+            const video = document.getElementById('scanner-video');
+            scannerContainer.style.display = 'block';
+
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+            .then((stream) => {
+                state.scannerStream = stream;
+                video.srcObject = stream;
+                video.setAttribute("playsinline", true);
+                video.play();
+                requestAnimationFrame(scanQRCodeTick);
+            })
+            .catch((err) => {
+                alert("Kamera tidak dapat diakses atau diizinkan: " + err);
+                scannerContainer.style.display = 'none';
+            });
+        }
+
+        function scanQRCodeTick() {
+            const video = document.getElementById('scanner-video');
+            if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                const canvas = document.createElement("canvas");
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                const ctx = canvas.getContext("2d");
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const code = jsQR(imageData.data, imageData.width, imageData.height);
+
+                if (code) {
+                    stopCameraScan();
+                    alert("Barcode Ditemukan: " + code.data);
+                    
+                    // Match barcode with employee or office QR
+                    if(code.data.startsWith("EMP-")) {
+                        const empSelect = document.getElementById('employeeSelect');
+                        empSelect.value = code.data;
+                        onEmployeeSelectChange();
+                    } else if(code.data === "HWL_LAW_FIRM_OFFICE_OFFICIAL_QR_2026") {
+                        alert("Barcode Kantor Resmi Terverifikasi! Silakan lengkapi agenda & kirim presensi.");
+                    }
+                    return;
                 }
             }
+            if(state.scannerStream) {
+                requestAnimationFrame(scanQRCodeTick);
+            }
         }
 
-        function exportAttendanceToWord() {
-            const db = getDB();
-            let htmlContent = `
+        function stopCameraScan() {
+            if(state.scannerStream) {
+                state.scannerStream.getTracks().forEach(track => track.stop());
+                state.scannerStream = null;
+            }
+            document.getElementById('interactive-scanner').style.display = 'none';
+        }
+
+        // ----------------------------------------------------
+        // EMPLOYEES & PROFILES
+        // ----------------------------------------------------
+        function renderEmployeeDropdowns() {
+            const select1 = document.getElementById('employeeSelect');
+            const select2 = document.getElementById('leaveEmployeeSelect');
+            const select3 = document.getElementById('taskEmployeeSelect');
+
+            let html = '<option value="">-- Pilih Karyawan --</option>';
+            state.employees.forEach(emp => {
+                html += `<option value="${emp.id}">${emp.nip} - ${emp.nama}</option>`;
+            });
+
+            if(select1) select1.innerHTML = html;
+            if(select2) select2.innerHTML = html;
+            if(select3) select3.innerHTML = html;
+        }
+
+        function onEmployeeSelectChange() {
+            const empId = document.getElementById('employeeSelect').value;
+            const emp = state.employees.find(e => e.id === empId);
+
+            const nameEl = document.getElementById('employeeProfileName');
+            const roleEl = document.getElementById('employeeProfileRole');
+            const picEl = document.getElementById('employeeProfilePic');
+            const qrDiv = document.getElementById('employeePersonalQR');
+
+            if(emp) {
+                nameEl.innerText = emp.nama;
+                roleEl.innerText = `${emp.nip} | ${emp.jabatan}`;
+                picEl.src = emp.foto || `https://via.placeholder.com/110/6B0D18/FFFFFF?text=${encodeURIComponent(emp.nama.charAt(0))}`;
+                
+                qrDiv.innerHTML = "";
+                new QRCode(qrDiv, {
+                    text: emp.id,
+                    width: 100,
+                    height: 100
+                });
+            } else {
+                nameEl.innerText = "Pilih Karyawan";
+                roleEl.innerText = "-";
+                picEl.src = "https://via.placeholder.com/110?text=Foto";
+                qrDiv.innerHTML = "";
+            }
+        }
+
+        function handleProfilePhotoUpload(e) {
+            const empId = document.getElementById('employeeSelect').value;
+            if(!empId) {
+                alert('Pilih karyawan terlebih dahulu sebelum mengunggah foto!');
+                return;
+            }
+
+            const file = e.target.files[0];
+            if(file) {
+                const reader = new FileReader();
+                reader.onload = async function(evt) {
+                    const base64Img = evt.target.result;
+                    const empIdx = state.employees.findIndex(e => e.id === empId);
+                    if(empIdx !== -1) {
+                        state.employees[empIdx].foto = base64Img;
+                        await saveDataToFirebase('karyawan', state.employees);
+                        document.getElementById('employeeProfilePic').src = base64Img;
+                        alert('Foto Profil Berhasil Diperbarui!');
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function renderEmployeeAdminTable() {
+            const tbody = document.getElementById('employeeAdminTableBody');
+            if(!tbody) return;
+
+            let html = '';
+            state.employees.forEach(emp => {
+                html += `
+                    <tr>
+                        <td><strong>${emp.nip}</strong></td>
+                        <td>${emp.nama}</td>
+                        <td>${emp.jabatan}</td>
+                        <td><span class="badge badge-info">${emp.id}</span></td>
+                        <td>
+                            <button class="btn btn-danger btn-sm" onclick="deleteEmployee('${emp.id}')"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html || '<tr><td colspan="5" style="text-align:center;">Belum ada karyawan.</td></tr>';
+        }
+
+        async function handleSaveEmployee(e) {
+            e.preventDefault();
+            const nip = document.getElementById('empNip').value;
+            const nama = document.getElementById('empName').value;
+            const jabatan = document.getElementById('empRole').value;
+
+            const newEmp = {
+                id: "EMP-" + Date.now().toString().slice(-4),
+                nip,
+                nama,
+                jabatan,
+                foto: ""
+            };
+
+            state.employees.push(newEmp);
+            await saveDataToFirebase('karyawan', state.employees);
+            alert('Karyawan Berhasil Ditambahkan!');
+            document.getElementById('addEmployeeForm').reset();
+            syncDataFromFirebase();
+        }
+
+        async function deleteEmployee(id) {
+            if(confirm('Apakah Anda yakin ingin menghapus karyawan ini?')) {
+                state.employees = state.employees.filter(e => e.id !== id);
+                await saveDataToFirebase('karyawan', state.employees);
+                syncDataFromFirebase();
+            }
+        }
+
+        // ----------------------------------------------------
+        // ATTENDANCE SUBMISSION
+        // ----------------------------------------------------
+        async function handleAttendanceSubmit(e) {
+            e.preventDefault();
+            const empId = document.getElementById('employeeSelect').value;
+            const agenda = document.getElementById('agendaInput').value;
+
+            if(!empId) {
+                alert('Pilih karyawan!');
+                return;
+            }
+
+            const emp = state.employees.find(e => e.id === empId);
+            const now = new Date();
+
+            const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+            const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+
+            const jamStr = String(now.getHours()).padStart(2, '0');
+            const mntStr = String(now.getMinutes()).padStart(2, '0');
+            const dtkStr = String(now.getSeconds()).padStart(2, '0');
+
+            const timestampFormatted = `${jamStr}:${mntStr}:${dtkStr}`;
+            const tanggalFormatted = `${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+            const hariFormatted = days[now.getDay()];
+
+            // Check shift status
+            const jamMasukSplit = state.settings.jamMasuk.split(':');
+            const targetMin = parseInt(jamMasukSplit[0]) * 60 + parseInt(jamMasukSplit[1]) + state.settings.toleransi;
+            const currentMin = now.getHours() * 60 + now.getMinutes();
+
+            const statusShift = (currentMin <= targetMin) ? "Tepat Waktu" : "Terlambat";
+
+            const newAtt = {
+                id: "ATT-" + Date.now(),
+                empId: emp.id,
+                nip: emp.nip,
+                nama: emp.nama,
+                jabatan: emp.jabatan,
+                detik: dtkStr,
+                menit: mntStr,
+                jam: jamStr,
+                waktuPresisi: timestampFormatted,
+                hari: hariFormatted,
+                tanggal: tanggalFormatted,
+                agenda,
+                gps: state.currentGPS.address,
+                statusShift
+            };
+
+            state.attendance.unshift(newAtt);
+            await saveDataToFirebase('absensi', state.attendance);
+
+            alert(`PRESENSI BERHASIL!
+
+Waktu: ${hariFormatted}, ${tanggalFormatted} - ${timestampFormatted}
+Status: ${statusShift}`);
+            document.getElementById('attendanceForm').reset();
+            fetchGPSLocation();
+            syncDataFromFirebase();
+        }
+
+        function renderAttendanceRekapTable() {
+            const tbody = document.getElementById('rekapAttendanceTableBody');
+            if(!tbody) return;
+
+            let html = '';
+            state.attendance.forEach(att => {
+                const badgeClass = att.statusShift === "Tepat Waktu" ? "badge-success" : "badge-warning";
+                html += `
+                    <tr>
+                        <td><strong>${att.hari}</strong><br><small>${att.tanggal}</small></td>
+                        <td><span style="font-family: monospace; font-weight: bold; color: var(--maroon-primary);">${att.waktuPresisi}</span></td>
+                        <td><strong>${att.nama}</strong><br><small>${att.nip}</small></td>
+                        <td>${att.jabatan}</td>
+                        <td>${att.agenda}</td>
+                        <td><small>${att.gps}</small></td>
+                        <td><span class="badge ${badgeClass}">${att.statusShift}</span></td>
+                        <td>
+                            <button class="btn btn-danger btn-sm" onclick="deleteAttendance('${att.id}')"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            tbody.innerHTML = html || '<tr><td colspan="8" style="text-align:center;">Belum ada data presensi.</td></tr>';
+        }
+
+        async function deleteAttendance(id) {
+            if(confirm('Hapus log presensi ini?')) {
+                state.attendance = state.attendance.filter(a => a.id !== id);
+                await saveDataToFirebase('absensi', state.attendance);
+                syncDataFromFirebase();
+            }
+        }
+
+        // ----------------------------------------------------
+        // EXPORT TO WORD (.DOC)
+        // ----------------------------------------------------
+        function exportToWordDoc() {
+            let tableHTML = `
                 <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
-                <head><title>Rekap Absensi HWL Law Firm</title>
-                <style>
-                    body { font-family: 'Times New Roman', serif; }
-                    h2 { text-align: center; color: #6B1426; margin-bottom: 5px; }
-                    p { text-align: center; font-size: 10pt; margin-top: 0; }
-                    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-                    th, td { border: 1px solid #000; padding: 8px; font-size: 10pt; text-align: left; }
-                    th { background-color: #6B1426; color: #FFFFFF; }
-                </style>
+                <head>
+                    <title>Rekap Absensi Karyawan HWL Law Firm</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; }
+                        h2 { color: #6B0D18; text-align: center; }
+                        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                        th { background-color: #6B0D18; color: #ffffff; border: 1px solid #000; padding: 8px; text-align: left; }
+                        td { border: 1px solid #000; padding: 8px; text-align: left; }
+                    </style>
                 </head>
                 <body>
-                <h2>REKAPITULASI ABSENSI KARYAWAN HWL LAW FIRM</h2>
-                <p>Tanggal Cetak: ${new Date().toLocaleDateString('id-ID')}</p>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Waktu Absen</th>
-                            <th>Nama Karyawan</th>
-                            <th>Agenda Kegiatan</th>
-                            <th>Lokasi GPS</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${db.attendance.map(a => `
+                    <h2>KANTOR HUKUM HWL LAW FIRM</h2>
+                    <h3 style="text-align: center;">LAPORAN REKAPITULASI PRESENSI KARYAWAN</h3>
+                    <p style="text-align: center;">Tanggal Cetak: ${new Date().toLocaleDateString('id-ID')}</p>
+                    <hr>
+                    <table>
+                        <thead>
                             <tr>
-                                <td>${a.timestamp}</td>
-                                <td>${a.name}</td>
-                                <td>${a.agenda}</td>
-                                <td>${a.location}</td>
+                                <th>Hari / Tanggal</th>
+                                <th>Waktu Precise</th>
+                                <th>NIP</th>
+                                <th>Nama Karyawan</th>
+                                <th>Jabatan</th>
+                                <th>Agenda Kegiatan</th>
+                                <th>Lokasi GPS</th>
+                                <th>Status</th>
                             </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-                </body></html>
+                        </thead>
+                        <tbody>
             `;
 
-            const blob = new Blob(['\ufeff' + htmlContent], { type: 'application/msword' });
+            state.attendance.forEach(att => {
+                tableHTML += `
+                    <tr>
+                        <td>${att.hari}, ${att.tanggal}</td>
+                        <td>${att.waktuPresisi}</td>
+                        <td>${att.nip}</td>
+                        <td>${att.nama}</td>
+                        <td>${att.jabatan}</td>
+                        <td>${att.agenda}</td>
+                        <td>${att.gps}</td>
+                        <td>${att.statusShift}</td>
+                    </tr>
+                `;
+            });
+
+            tableHTML += `
+                        </tbody>
+                    </table>
+                </body>
+                </html>
+            `;
+
+            const blob = new Blob(['﻿' + tableHTML], { type: 'application/msword' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `Rekap_Absen_HWL_${new Date().toISOString().split('T')[0]}.doc`;
+            a.download = `Laporan_Absensi_HWL_Law_Firm_${Date.now()}.doc`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
         }
 
-        // ==========================================
-        // 3. PORTAL KARYAWAN
-        // ==========================================
-        let empTab = 'scan';
+        // ----------------------------------------------------
+        // TASKS & DEADLINES
+        // ----------------------------------------------------
+        async function handleAddTaskSubmit(e) {
+            e.preventDefault();
+            const judul = document.getElementById('taskTitle').value;
+            const empId = document.getElementById('taskEmployeeSelect').value;
+            const deadline = document.getElementById('taskDeadline').value;
+            const deskripsi = document.getElementById('taskDesc').value;
 
-        function renderEmployeePortal(db) {
-            const emp = session.user;
-            return `
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                    <div class="bg-white rounded-xl shadow border border-gold/30 p-4 space-y-4 text-center">
-                        <div class="w-20 h-20 mx-auto rounded-full bg-gold/20 border-2 border-gold flex items-center justify-center">
-                            <i class="fa-solid fa-user-tie text-maroon text-3xl"></i>
-                        </div>
-                        <div>
-                            <h3 class="font-bold text-sm text-maroon">${emp.name}</h3>
-                            <p class="text-xs text-gray-500">ID: ${emp.id}</p>
-                        </div>
+            const emp = state.employees.find(e => e.id === empId);
 
-                        <div class="space-y-2 pt-2 border-t">
-                            <button onclick="switchEmpTab('scan')" class="w-full text-left px-4 py-2 rounded-lg font-bold text-xs ${empTab === 'scan' ? 'bg-maroon text-gold' : 'hover:bg-gray-100'}">
-                                <i class="fa-solid fa-qrcode w-5"></i>Scan Absen Kamera
-                            </button>
-                            <button onclick="switchEmpTab('leave')" class="w-full text-left px-4 py-2 rounded-lg font-bold text-xs ${empTab === 'leave' ? 'bg-maroon text-gold' : 'hover:bg-gray-100'}">
-                                <i class="fa-solid fa-notes-medical w-5"></i>Form Izin / Sakit
-                            </button>
-                        </div>
-                    </div>
+            const newTask = {
+                id: "TSK-" + Date.now(),
+                judul,
+                empId,
+                namaEmp: emp ? emp.nama : "-",
+                deadline,
+                deskripsi,
+                status: "Pending"
+            };
 
-                    <div class="md:col-span-3">
-                        ${renderEmpTabContent(db)}
-                    </div>
-                </div>
-            `;
+            state.tasks.push(newTask);
+            await saveDataToFirebase('tugas_deadline', state.tasks);
+            alert('Tugas Berhasil Ditugaskan!');
+            document.getElementById('addTaskForm').reset();
+            syncDataFromFirebase();
         }
 
-        function switchEmpTab(tab) {
-            empTab = tab;
-            render();
-            if (tab === 'scan') {
-                setTimeout(initGPS, 300);
+        function renderTasksTables() {
+            // Employee View
+            const empTbody = document.getElementById('employeeTaskTableBody');
+            if(empTbody) {
+                let html = '';
+                state.tasks.forEach(t => {
+                    html += `
+                        <tr>
+                            <td><strong>${t.judul}</strong></td>
+                            <td>${t.namaEmp}</td>
+                            <td>${t.deskripsi}</td>
+                            <td><span style="color: #c0392b; font-weight: bold;">${new Date(t.deadline).toLocaleString('id-ID')}</span></td>
+                            <td><span class="badge ${t.status === 'Selesai' ? 'badge-success' : 'badge-warning'}">${t.status}</span></td>
+                        </tr>
+                    `;
+                });
+                empTbody.innerHTML = html || '<tr><td colspan="5" style="text-align:center;">Tidak ada tugas hari ini.</td></tr>';
+            }
+
+            // Admin View
+            const adminTbody = document.getElementById('adminTaskTableBody');
+            if(adminTbody) {
+                let html = '';
+                state.tasks.forEach(t => {
+                    html += `
+                        <tr>
+                            <td><strong>${t.judul}</strong></td>
+                            <td>${t.namaEmp}</td>
+                            <td><small>${new Date(t.deadline).toLocaleString('id-ID')}</small></td>
+                            <td>
+                                <button class="btn btn-danger btn-sm" onclick="deleteTask('${t.id}')"><i class="fa-solid fa-trash"></i></button>
+                            </td>
+                        </tr>
+                    `;
+                });
+                adminTbody.innerHTML = html || '<tr><td colspan="4" style="text-align:center;">Belum ada tugas.</td></tr>';
             }
         }
 
-        let gpsLocationString = "Mendeteksi GPS...";
-
-        function initGPS() {
-            const gpsEl = document.getElementById('emp-gps-display');
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    (pos) => {
-                        gpsLocationString = `Lat: ${pos.coords.latitude.toFixed(5)}, Lng: ${pos.coords.longitude.toFixed(5)}`;
-                        if (gpsEl) gpsEl.innerHTML = `<i class="fa-solid fa-location-dot text-red-600 mr-1"></i>${gpsLocationString}`;
-                    },
-                    () => {
-                        gpsLocationString = "GPS Aktif (Akses Diberikan)";
-                        if (gpsEl) gpsEl.innerHTML = `<i class="fa-solid fa-location-dot text-gold mr-1"></i>${gpsLocationString}`;
-                    }
-                );
+        async function deleteTask(id) {
+            if(confirm('Hapus tugas ini?')) {
+                state.tasks = state.tasks.filter(t => t.id !== id);
+                await saveDataToFirebase('tugas_deadline', state.tasks);
+                syncDataFromFirebase();
             }
         }
 
-        function renderEmpTabContent(db) {
-            if (empTab === 'scan') {
-                return `
-                    <div class="bg-white rounded-xl shadow p-6 border border-gold/30">
-                        <h3 class="font-bold text-lg text-maroon mb-2"><i class="fa-solid fa-qrcode mr-2 text-gold"></i>Absen Kehadiran via Barcode</h3>
-                        <p class="text-xs text-gray-500 mb-4">Arahkan kamera HP Anda ke Barcode QR Kantor HWL Law Firm.</p>
+        // ----------------------------------------------------
+        // LEAVE / SICK PERMIT PORTAL
+        // ----------------------------------------------------
+        let tempLeaveProofBase64 = "";
 
-                        <div class="space-y-4">
-                            <div class="bg-black/90 rounded-xl p-3 flex flex-col items-center justify-center min-h-[220px]">
-                                <div id="reader" class="w-full max-w-sm rounded overflow-hidden"></div>
-                                <button onclick="startCameraScanner()" id="start-cam-btn" class="bg-gold text-maroon-dark font-bold text-xs px-4 py-2 rounded shadow mt-2">
-                                    <i class="fa-solid fa-camera mr-1"></i> Buka Kamera HP
-                                </button>
-                            </div>
+        function previewLeaveProof(e) {
+            const file = e.target.files[0];
+            if(file) {
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    tempLeaveProofBase64 = evt.target.result;
+                    const preview = document.getElementById('leaveProofPreview');
+                    preview.src = tempLeaveProofBase64;
+                    preview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
 
-                            <div>
-                                <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Agenda Kegiatan Hari Ini *</label>
-                                <textarea id="emp-agenda-input" rows="3" placeholder="Tuliskan agenda kerja Anda hari ini..." class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-maroon"></textarea>
-                            </div>
+        async function handleLeaveSubmit(e) {
+            e.preventDefault();
+            const empId = document.getElementById('leaveEmployeeSelect').value;
+            const jenis = document.getElementById('leaveType').value;
+            const tanggal = document.getElementById('leaveDate').value;
+            const keterangan = document.getElementById('leaveReason').value;
 
-                            <div class="bg-gray-50 p-3 rounded-lg border flex justify-between items-center text-xs">
-                                <span>Status Lokasi GPS:</span>
-                                <span id="emp-gps-display" class="font-bold text-maroon">Mendeteksi...</span>
-                            </div>
+            if(!empId) {
+                alert('Pilih Karyawan!');
+                return;
+            }
 
-                            <button onclick="manualSimulateScan()" class="w-full maroon-gradient text-gold font-bold py-3 rounded-lg border border-gold shadow">
-                                <i class="fa-solid fa-check-circle mr-2"></i>Konfirmasi Absen Kehadiran
-                            </button>
-                        </div>
-                    </div>
+            const emp = state.employees.find(e => e.id === empId);
+
+            const newLeave = {
+                id: "LV-" + Date.now(),
+                empId,
+                namaEmp: emp.nama,
+                jenis,
+                tanggal,
+                keterangan,
+                fotoSurat: tempLeaveProofBase64,
+                status: "Pending Verifikasi"
+            };
+
+            state.leaves.unshift(newLeave);
+            await saveDataToFirebase('perizinan', state.leaves);
+
+            alert('Permohonan Izin / Surat Keterangan Sakit Berhasil Terkirim!');
+            document.getElementById('leaveForm').reset();
+            document.getElementById('leaveProofPreview').style.display = 'none';
+            tempLeaveProofBase64 = "";
+            syncDataFromFirebase();
+        }
+
+        function renderLeavesTable() {
+            const tbody = document.getElementById('adminLeaveTableBody');
+            if(!tbody) return;
+
+            let html = '';
+            state.leaves.forEach(l => {
+                html += `
+                    <tr>
+                        <td>${l.tanggal}</td>
+                        <td><strong>${l.namaEmp}</strong></td>
+                        <td><span class="badge badge-info">${l.jenis}</span></td>
+                        <td>${l.keterangan}</td>
+                        <td>
+                            ${l.fotoSurat ? `<button class="btn btn-gold btn-sm" onclick="viewImageModal('${l.id}')"><i class="fa-solid fa-image"></i> Lihat Surat</button>` : 'Tidak Ada'}
+                        </td>
+                        <td><span class="badge ${l.status === 'Disetujui' ? 'badge-success' : 'badge-warning'}">${l.status}</span></td>
+                        <td>
+                            <button class="btn btn-gold btn-sm" onclick="updateLeaveStatus('${l.id}', 'Disetujui')"><i class="fa-solid fa-check"></i> Disetujui</button>
+                        </td>
+                    </tr>
                 `;
-            }
-
-            if (empTab === 'leave') {
-                return `
-                    <div class="bg-white rounded-xl shadow p-6 border border-gold/30 max-w-lg">
-                        <h3 class="font-bold text-lg text-maroon mb-4"><i class="fa-solid fa-notes-medical mr-2"></i>Form Pengajuan Izin / Sakit</h3>
-                        <div class="space-y-4">
-                            <div>
-                                <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Kategori</label>
-                                <select id="leave-type-input" class="w-full px-3 py-2 border rounded-lg text-sm">
-                                    <option value="Sakit">Sakit</option>
-                                    <option value="Izin">Izin Berhalangan Hadir</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Alasan / Catatan</label>
-                                <textarea id="leave-reason-input" rows="3" placeholder="Jelaskan alasan berhalangan..." class="w-full px-3 py-2 border rounded-lg text-sm"></textarea>
-                            </div>
-                            <button onclick="submitEmpLeave()" class="w-full bg-maroon text-gold font-bold py-2.5 rounded-lg hover:bg-maroon-dark">
-                                Kirim Pengajuan ke Admin
-                            </button>
-                        </div>
-                    </div>
-                `;
-            }
-        }
-
-        let html5QrcodeScanner = null;
-
-        function startCameraScanner() {
-            const btn = document.getElementById('start-cam-btn');
-            if (btn) btn.classList.add('hidden');
-
-            html5QrcodeScanner = new Html5Qrcode("reader");
-            html5QrcodeScanner.start(
-                { facingMode: "environment" },
-                { fps: 10, qrbox: { width: 200, height: 200 } },
-                (decodedText) => {
-                    html5QrcodeScanner.stop();
-                    processAttendanceRecord(decodedText);
-                },
-                () => {}
-            ).catch(err => {
-                alert('Tidak dapat membuka kamera. Izinkan akses kamera pada browser HP Anda.');
             });
+
+            tbody.innerHTML = html || '<tr><td colspan="7" style="text-align:center;">Belum ada permohonan izin.</td></tr>';
         }
 
-        function manualSimulateScan() {
-            const db = getDB();
-            processAttendanceRecord(db.settings.officeQR);
+        function viewImageModal(id) {
+            const leave = state.leaves.find(l => l.id === id);
+            if(leave && leave.fotoSurat) {
+                document.getElementById('fullImagePreview').src = leave.fotoSurat;
+                document.getElementById('imagePreviewModal').classList.add('active');
+            }
         }
 
-        // Proses Absen
-        async function processAttendanceRecord(scannedQR) {
-            const db = getDB();
-            const agenda = document.getElementById('emp-agenda-input')?.value;
-
-            if (!agenda) {
-                alert('Wajib mengisi agenda kegiatan hari ini!');
-                return;
-            }
-
-            if (scannedQR !== db.settings.officeQR) {
-                alert('Barcode QR tidak sesuai dengan QR Resmi HWL Law Firm!');
-                return;
-            }
-
-            const now = new Date();
-            const timestampStr = `${now.toLocaleDateString('id-ID', { weekday: 'long' })}, ${now.getDate()}/${now.getMonth()+1}/${now.getFullYear()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')} WIB`;
-
-            const payload = {
-                action: 'absen',
-                id: session.user.id,
-                name: session.user.name,
-                timestamp: timestampStr,
-                agenda: agenda,
-                location: gpsLocationString
-            };
-
-            db.attendance.unshift(payload);
-            saveLocalDB(db);
-
-            try {
-                await fetch(GOOGLE_SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                alert(`Absen Berhasil Dicatat Online!\n\nWaktu: ${timestampStr}\nKaryawan: ${session.user.name}`);
-                syncOnlineData();
-            } catch (err) {
-                alert(`Absen tersimpan lokal. Terjadi kendala sinyal ke Cloud.`);
-            }
-
-            switchEmpTab('scan');
+        function closeImageModal() {
+            document.getElementById('imagePreviewModal').classList.remove('active');
         }
 
-        async function submitEmpLeave() {
-            const type = document.getElementById('leave-type-input').value;
-            const reason = document.getElementById('leave-reason-input').value;
-
-            if (!reason) { alert('Alasan wajib diisi!'); return; }
-
-            const db = getDB();
-            const payload = {
-                action: 'izin',
-                name: session.user.name,
-                type: type,
-                reason: reason
-            };
-
-            db.leaves.unshift({ name: session.user.name, type, reason });
-            saveLocalDB(db);
-
-            try {
-                await fetch(GOOGLE_SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                alert('Pengajuan izin terkirim ke Cloud!');
-                syncOnlineData();
-            } catch (e) {
-                alert('Pengajuan izin tersimpan lokal.');
+        async function updateLeaveStatus(id, newStatus) {
+            const idx = state.leaves.findIndex(l => l.id === id);
+            if(idx !== -1) {
+                state.leaves[idx].status = newStatus;
+                await saveDataToFirebase('perizinan', state.leaves);
+                syncDataFromFirebase();
             }
-
-            switchEmpTab('leave');
         }
 
-        // Inisialisasi
-        render();
-        syncOnlineData();
-
-        // Check sinkronisasi otomatis tiap 8 detik
-        setInterval(() => {
-            syncOnlineData();
-        }, 8000);
+        // Stats Counter Updates
+        function updateStatsCount() {
+            document.getElementById('statTotalEmployees').innerText = state.employees.length;
+            document.getElementById('statHadirToday').innerText = state.attendance.length;
+            document.getElementById('statIzinToday').innerText = state.leaves.length;
+            document.getElementById('statPendingTasks').innerText = state.tasks.filter(t => t.status === 'Pending').length;
+        }
     </script>
 </body>
 </html>
