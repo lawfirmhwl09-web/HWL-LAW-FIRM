@@ -505,6 +505,18 @@
             background: #eee;
         }
 
+        .table-profile-img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--gold-primary);
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 8px;
+            background: #eee;
+        }
+
         .live-clock {
             font-size: 1.8rem;
             font-weight: 700;
@@ -1280,6 +1292,7 @@
                     if(!empData) await saveDataToFirebase('karyawan', state.employees);
                     renderEmployeeDropdowns();
                     renderEmployeeAdminTable();
+                    onEmployeeSelectChange(); // Perbarui profil jika sedang dipilih
                 }
 
                 const resAtt = await fetch(`${DB_BASE_URL}/absensi.json`);
@@ -1593,7 +1606,7 @@
             if(emp) {
                 nameEl.innerText = emp.nama;
                 roleEl.innerText = `${emp.nip} | ${emp.jabatan}`;
-                picEl.src = emp.foto || `https://via.placeholder.com/110/6B0D18/FFFFFF?text=${encodeURIComponent(emp.nama.charAt(0))}`;
+                picEl.src = emp.foto && emp.foto.trim() !== "" ? emp.foto : `https://via.placeholder.com/110/6B0D18/FFFFFF?text=${encodeURIComponent(emp.nama.charAt(0))}`;
                 
                 qrDiv.innerHTML = "";
                 new QRCode(qrDiv, {
@@ -1680,10 +1693,14 @@
 
             let html = '';
             state.employees.forEach(emp => {
+                const fotoSrc = emp.foto && emp.foto.trim() !== "" ? emp.foto : `https://via.placeholder.com/40/6B0D18/FFFFFF?text=${encodeURIComponent(emp.nama.charAt(0))}`;
                 html += `
                     <tr>
                         <td><strong>${emp.nip}</strong></td>
-                        <td>${emp.nama}</td>
+                        <td>
+                            <img src="${fotoSrc}" class="table-profile-img">
+                            <strong>${emp.nama}</strong>
+                        </td>
                         <td>${emp.jabatan}</td>
                         <td><span class="badge badge-info">${emp.id}</span></td>
                         <td>
@@ -1766,6 +1783,7 @@
                 nip: emp.nip,
                 nama: emp.nama,
                 jabatan: emp.jabatan,
+                foto: emp.foto || "",
                 detik: dtkStr,
                 menit: mntStr,
                 jam: jamStr,
@@ -1794,12 +1812,20 @@
 
             let html = '';
             state.attendance.forEach(att => {
+                // Ambil foto dari data absensi atau sinkronkan dengan data master karyawan terbaru
+                const currentEmp = state.employees.find(e => e.id === att.empId);
+                const activeFoto = (currentEmp && currentEmp.foto && currentEmp.foto.trim() !== "") ? currentEmp.foto : (att.foto || "");
+                const fotoSrc = activeFoto ? activeFoto : `https://via.placeholder.com/40/6B0D18/FFFFFF?text=${encodeURIComponent(att.nama.charAt(0))}`;
+                
                 const badgeClass = att.statusShift === "Tepat Waktu" ? "badge-success" : "badge-warning";
                 html += `
                     <tr>
                         <td><strong>${att.hari}</strong><br><small>${att.tanggal}</small></td>
                         <td><span style="font-family: monospace; font-weight: bold; color: var(--maroon-primary);">${att.waktuPresisi}</span></td>
-                        <td><strong>${att.nama}</strong><br><small>${att.nip}</small></td>
+                        <td>
+                            <img src="${fotoSrc}" class="table-profile-img">
+                            <strong>${att.nama}</strong><br><small>${att.nip} (${att.empId || '-'})</small>
+                        </td>
                         <td>${att.jabatan}</td>
                         <td>${att.agenda}</td>
                         <td><small>${att.gps}</small></td>
