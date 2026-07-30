@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Absensi & Manajemen Cloud - HWL Law Firm</title>
+    <title>Sistem Absensi HWL Law Firm</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome CDN -->
@@ -52,9 +52,7 @@
                     <p class="text-xs text-gray-200">Advocates & Legal Consultants</p>
                 </div>
             </div>
-            <div id="header-user-info" class="text-right text-xs">
-                <!-- User status JS -->
-            </div>
+            <div id="header-user-info" class="text-right text-xs"></div>
         </div>
     </header>
 
@@ -70,13 +68,15 @@
 
     <!-- Footer -->
     <footer class="bg-maroon-dark text-gold py-4 text-center text-xs border-t border-gold/30">
-        <p>&copy; 2026 HWL Law Firm. Cloud Database Auto-Sync Active.</p>
+        <p>&copy; 2026 HWL Law Firm. Real-Time Cloud Database Active.</p>
     </footer>
 
     <!-- Logic Script -->
     <script>
-        // URL GOOGLE APPS SCRIPT (DATABASE CLOUD TERPUSAT)
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyUhGqaAxIOxGA4V-u3YsA3y0dQ4ce5fB6tPVi74Bvz2vyxS7iUQLeZdS2vSuEKytQX/exec";
+        // =========================================================================
+        // MASUKKAN URL GOOGLE APPS SCRIPT (WEB APP) ANDA DI SINI
+        // =========================================================================
+        const GOOGLE_SCRIPT_URL = "PASTE_URL_WEB_APP_GOOGLE_SHEETS_DI_SINI";
 
         const DEFAULT_DATA = {
             admin: {
@@ -84,16 +84,10 @@
                 password: 'admin123'
             },
             settings: {
-                workStart: '08:00',
-                workEnd: '17:00',
-                workDays: 'Senin - Jumat',
                 officeQR: 'HWL-OFFICE-CHECKIN-2026'
             },
             employees: [],
             attendance: [],
-            tasks: [
-                { id: 1, title: 'Menyusun Eksepsi Perkara Perdata No. 01372/2024', deadline: '2026-07-31 16:00', assignee: 'all' }
-            ],
             leaves: []
         };
 
@@ -106,10 +100,10 @@
             localStorage.setItem('hwl_law_firm_db', JSON.stringify(data));
         }
 
-        // FUNGSI SINKRONISASI OTOMATIS DARI CLOUD GOOGLE SHEETS
+        // FUNGSI SINKRONISASI OTOMATIS DARI GOOGLE SHEETS CLOUD
         let isSyncing = false;
         async function syncOnlineData() {
-            if (isSyncing || !GOOGLE_SCRIPT_URL) return;
+            if (isSyncing || !GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL.includes("PASTE_URL")) return;
             isSyncing = true;
             
             const banner = document.getElementById('sync-banner');
@@ -122,16 +116,16 @@
                 if (result.status === 'success') {
                     const db = getDB();
                     
-                    // Update data dari Cloud ke lokal
-                    if (Array.isArray(result.employees)) db.employees = result.employees;
-                    if (Array.isArray(result.attendance)) db.attendance = result.attendance;
-                    if (Array.isArray(result.leaves)) db.leaves = result.leaves;
+                    // Perbarui memori dengan data Cloud
+                    db.employees = Array.isArray(result.employees) ? result.employees : [];
+                    db.attendance = Array.isArray(result.attendance) ? result.attendance : [];
+                    db.leaves = Array.isArray(result.leaves) ? result.leaves : [];
 
                     saveLocalDB(db);
                     render();
                 }
             } catch (err) {
-                console.warn("Gagal terhubung ke Cloud. Berjalan dalam mode offline cache.");
+                console.warn("Mode Offline/Cache digunakan sementara.");
             } finally {
                 isSyncing = false;
                 if (banner) banner.classList.add('hidden');
@@ -160,7 +154,7 @@
             const headerInfo = document.getElementById('header-user-info');
 
             if (!session.role) {
-                headerInfo.innerHTML = `<span class="bg-gold/20 text-gold px-2 py-1 rounded border border-gold/40"><i class="fa-solid fa-cloud-check mr-1"></i>System Online</span>`;
+                headerInfo.innerHTML = `<span class="bg-gold/20 text-gold px-2 py-1 rounded border border-gold/40"><i class="fa-solid fa-cloud-check mr-1"></i>Cloud Online</span>`;
                 app.innerHTML = renderLoginScreen(db);
             } else if (session.role === 'admin') {
                 headerInfo.innerHTML = `
@@ -185,18 +179,33 @@
                 <div class="max-w-md mx-auto my-8 bg-white rounded-2xl shadow-2xl border-2 border-gold overflow-hidden">
                     <div class="maroon-gradient p-6 text-center border-b border-gold/30">
                         <i class="fa-solid fa-user-shield text-gold text-4xl mb-2"></i>
-                        <h2 class="text-2xl font-bold text-white tracking-wide">Portal Akses HWL</h2>
-                        <p class="text-gold-light text-xs mt-1">Sistem Absensi Online Terintegrasi Cloud</p>
+                        <h2 class="text-2xl font-bold text-white tracking-wide">Portal HWL Law Firm</h2>
+                        <p class="text-gold-light text-xs mt-1">Sistem Absensi Online & Terintegrasi Cloud</p>
                     </div>
 
                     <div class="p-6">
                         <div class="flex bg-gray-100 rounded-xl p-1 mb-6 border">
-                            <button onclick="toggleLoginTab('admin')" id="tab-admin-btn" class="flex-1 py-2 text-sm font-bold rounded-lg bg-maroon text-gold shadow">Portal Admin</button>
-                            <button onclick="toggleLoginTab('employee')" id="tab-emp-btn" class="flex-1 py-2 text-sm font-bold text-gray-500 hover:text-maroon">Portal Karyawan</button>
+                            <button onclick="toggleLoginTab('employee')" id="tab-emp-btn" class="flex-1 py-2 text-sm font-bold rounded-lg bg-maroon text-gold shadow">Portal Karyawan</button>
+                            <button onclick="toggleLoginTab('admin')" id="tab-admin-btn" class="flex-1 py-2 text-sm font-bold text-gray-500 hover:text-maroon">Portal Admin</button>
+                        </div>
+
+                        <!-- Form Karyawan -->
+                        <div id="form-employee-login" class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Pilih Karyawan Terdaftar</label>
+                                <select id="login-emp-id" class="w-full px-4 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-maroon focus:outline-none">
+                                    ${db.employees.length === 0 
+                                        ? `<option value="">Memuat data dari Cloud / Belum ada karyawan...</option>` 
+                                        : db.employees.map(e => `<option value="${e.id}">${e.name} (${e.id})</option>`).join('')}
+                                </select>
+                            </div>
+                            <button onclick="processEmployeeLogin()" class="w-full bg-gold hover:bg-gold-dark text-maroon-dark font-bold py-3 rounded-lg border border-maroon shadow transition">
+                                <i class="fa-solid fa-user-check mr-2"></i>Masuk Portal Absen
+                            </button>
                         </div>
 
                         <!-- Form Admin -->
-                        <div id="form-admin-login" class="space-y-4">
+                        <div id="form-admin-login" class="space-y-4 hidden">
                             <div>
                                 <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Email Admin</label>
                                 <input type="email" id="login-admin-email" value="${db.admin.email}" class="w-full px-4 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-maroon focus:outline-none">
@@ -205,23 +214,8 @@
                                 <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Password Admin</label>
                                 <input type="password" id="login-admin-pass" value="${db.admin.password}" class="w-full px-4 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-maroon focus:outline-none">
                             </div>
-                            <button onclick="processAdminLogin()" class="w-full maroon-gradient hover:bg-maroon-dark text-gold font-bold py-3 rounded-lg border border-gold shadow transition">
+                            <button onclick="processAdminLogin()" class="w-full maroon-gradient text-gold font-bold py-3 rounded-lg border border-gold shadow transition">
                                 <i class="fa-solid fa-right-to-bracket mr-2"></i>Masuk Portal Admin
-                            </button>
-                        </div>
-
-                        <!-- Form Karyawan -->
-                        <div id="form-employee-login" class="space-y-4 hidden">
-                            <div>
-                                <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Pilih Karyawan Terdaftar</label>
-                                <select id="login-emp-id" class="w-full px-4 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-maroon focus:outline-none">
-                                    ${db.employees.length === 0 
-                                        ? `<option value="">Memuat data karyawan dari Cloud...</option>` 
-                                        : db.employees.map(e => `<option value="${e.id}">${e.name} (${e.id})</option>`).join('')}
-                                </select>
-                            </div>
-                            <button onclick="processEmployeeLogin()" class="w-full bg-gold hover:bg-gold-dark text-maroon-dark font-bold py-3 rounded-lg border border-maroon shadow transition">
-                                <i class="fa-solid fa-user-check mr-2"></i>Masuk Portal Absen
                             </button>
                         </div>
                     </div>
@@ -268,7 +262,7 @@
             if (emp) {
                 setSession('employee', emp);
             } else {
-                alert('Pilih nama karyawan yang valid!');
+                alert('Pilih nama karyawan terdaftar!');
             }
         }
 
@@ -288,13 +282,13 @@
                             <i class="fa-solid fa-chart-line w-6"></i>Dashboard
                         </button>
                         <button onclick="switchAdminTab('employees')" class="w-full text-left px-4 py-2.5 rounded-lg font-bold text-sm ${adminTab === 'employees' ? 'bg-maroon text-gold' : 'hover:bg-gray-100 text-gray-700'}">
-                            <i class="fa-solid fa-users w-6"></i>Data Karyawan Cloud
+                            <i class="fa-solid fa-users w-6"></i>Kelola Karyawan
                         </button>
                         <button onclick="switchAdminTab('attendance')" class="w-full text-left px-4 py-2.5 rounded-lg font-bold text-sm ${adminTab === 'attendance' ? 'bg-maroon text-gold' : 'hover:bg-gray-100 text-gray-700'}">
                             <i class="fa-solid fa-clipboard-user w-6"></i>Rekap Absensi
                         </button>
                         <button onclick="switchAdminTab('leaves')" class="w-full text-left px-4 py-2.5 rounded-lg font-bold text-sm ${adminTab === 'leaves' ? 'bg-maroon text-gold' : 'hover:bg-gray-100 text-gray-700'}">
-                            <i class="fa-solid fa-envelope-open-text w-6"></i>Permohonan Izin / Sakit
+                            <i class="fa-solid fa-envelope-open-text w-6"></i>Izin / Sakit
                         </button>
                     </div>
 
@@ -316,22 +310,22 @@
                     <div class="space-y-6">
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div class="bg-white p-5 rounded-xl shadow border-l-4 border-maroon">
-                                <p class="text-xs text-gray-500 font-bold uppercase">Total Karyawan Cloud</p>
+                                <p class="text-xs text-gray-500 font-bold uppercase">Total Karyawan</p>
                                 <h3 class="text-3xl font-bold text-maroon mt-1">${db.employees.length} Orang</h3>
                             </div>
                             <div class="bg-white p-5 rounded-xl shadow border-l-4 border-gold">
-                                <p class="text-xs text-gray-500 font-bold uppercase">Total Record Absensi</p>
+                                <p class="text-xs text-gray-500 font-bold uppercase">Total Absensi Cloud</p>
                                 <h3 class="text-3xl font-bold text-gold-dark mt-1">${db.attendance.length} Record</h3>
                             </div>
                             <div class="bg-white p-5 rounded-xl shadow border-l-4 border-maroon-light">
-                                <p class="text-xs text-gray-500 font-bold uppercase">Izin / Sakit Masuk</p>
+                                <p class="text-xs text-gray-500 font-bold uppercase">Permohonan Izin</p>
                                 <h3 class="text-3xl font-bold text-maroon-light mt-1">${db.leaves.length} Pengajuan</h3>
                             </div>
                         </div>
 
                         <div class="bg-white rounded-xl shadow p-6 border border-gold/40 text-center">
                             <h3 class="font-bold text-lg text-maroon mb-2"><i class="fa-solid fa-qrcode mr-2 text-gold"></i>Barcode QR Absensi Utama Kantor</h3>
-                            <p class="text-xs text-gray-600 mb-4">Cetak QR ini dan tempelkan di area masuk kantor HWL Law Firm.</p>
+                            <p class="text-xs text-gray-600 mb-4">Cetak QR Code ini dan tempelkan di area pintu masuk kantor HWL Law Firm.</p>
                             <div class="inline-block bg-gray-50 p-4 rounded-xl border border-dashed border-gold">
                                 <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${db.settings.officeQR}" class="mx-auto rounded shadow bg-white p-2 border">
                                 <p class="font-mono text-sm font-bold text-maroon mt-3">${db.settings.officeQR}</p>
@@ -345,9 +339,9 @@
                 return `
                     <div class="bg-white rounded-xl shadow p-6 border border-gold/30">
                         <div class="flex justify-between items-center mb-6">
-                            <h3 class="font-bold text-lg text-maroon"><i class="fa-solid fa-users mr-2"></i>Daftar Karyawan (Google Sheets Cloud)</h3>
+                            <h3 class="font-bold text-lg text-maroon"><i class="fa-solid fa-users mr-2"></i>Daftar Karyawan Terdaftar (Cloud Database)</h3>
                             <button onclick="openModalAddEmp()" class="bg-maroon text-gold px-4 py-2 rounded-lg font-bold text-xs hover:bg-maroon-dark shadow">
-                                <i class="fa-solid fa-user-plus mr-1"></i>Tambah Karyawan Baru
+                                <i class="fa-solid fa-user-plus mr-1"></i>Tambah Karyawan
                             </button>
                         </div>
 
@@ -358,19 +352,17 @@
                                         <th class="p-3 border">ID & Nama</th>
                                         <th class="p-3 border">Email</th>
                                         <th class="p-3 border">No. Telp</th>
-                                        <th class="p-3 border">Barcode ID</th>
                                         <th class="p-3 border text-center">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     ${db.employees.length === 0 
-                                        ? `<tr><td colspan="5" class="p-4 text-center text-gray-500">Belum ada data karyawan. Tambahkan karyawan baru di atas.</td></tr>`
+                                        ? `<tr><td colspan="4" class="p-4 text-center text-gray-500">Belum ada karyawan. Klik 'Tambah Karyawan' di atas.</td></tr>`
                                         : db.employees.map(e => `
                                             <tr class="hover:bg-gray-50 border-b">
                                                 <td class="p-3 font-bold">${e.name}<br><span class="text-[10px] text-gray-500 font-normal">${e.id}</span></td>
                                                 <td class="p-3">${e.email}</td>
                                                 <td class="p-3">${e.phone}</td>
-                                                <td class="p-3"><span class="bg-gold/20 text-maroon px-2 py-1 rounded font-mono font-bold">${e.barcode}</span></td>
                                                 <td class="p-3 text-center">
                                                     <button onclick="deleteEmployee('${e.id}')" class="text-red-600 hover:text-red-800 font-bold">
                                                         <i class="fa-solid fa-trash-can"></i> Hapus
@@ -391,7 +383,7 @@
                         <div class="flex justify-between items-center mb-6">
                             <div>
                                 <h3 class="font-bold text-lg text-maroon"><i class="fa-solid fa-clipboard-user mr-2"></i>Rekap Absensi Real-Time Cloud</h3>
-                                <p class="text-[11px] text-green-600 font-semibold mt-0.5"><i class="fa-solid fa-circle text-[8px] animate-pulse mr-1"></i>Otomatis tersinkronisasi dari HP Seluruh Karyawan</p>
+                                <p class="text-[11px] text-green-600 font-semibold mt-0.5"><i class="fa-solid fa-circle text-[8px] animate-pulse mr-1"></i>Data ter-update otomatis dari HP Karyawan</p>
                             </div>
                             <button onclick="exportAttendanceToWord()" class="bg-gold-dark text-white px-4 py-2 rounded-lg font-bold text-xs hover:bg-gold shadow">
                                 <i class="fa-solid fa-file-word mr-1"></i>Download MS Word
@@ -404,12 +396,12 @@
                                     <tr class="bg-maroon text-gold font-bold">
                                         <th class="p-3 border">Waktu Absen</th>
                                         <th class="p-3 border">Nama Karyawan</th>
-                                        <th class="p-3 border">Agenda Kerja Hari Ini</th>
+                                        <th class="p-3 border">Agenda Kegiatan Hari Ini</th>
                                         <th class="p-3 border">Lokasi GPS</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    ${db.attendance.length === 0 ? `<tr><td colspan="4" class="p-4 text-center text-gray-500">Belum ada catatan absensi terdeteksi.</td></tr>` : 
+                                    ${db.attendance.length === 0 ? `<tr><td colspan="4" class="p-4 text-center text-gray-500">Belum ada catatan absensi masuk.</td></tr>` : 
                                         db.attendance.map(a => `
                                             <tr class="hover:bg-gray-50 border-b">
                                                 <td class="p-3 font-mono font-bold text-maroon">${a.timestamp}</td>
@@ -439,7 +431,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    ${db.leaves.length === 0 ? `<tr><td colspan="3" class="p-4 text-center text-gray-500">Belum ada data izin/sakit.</td></tr>` : 
+                                    ${db.leaves.length === 0 ? `<tr><td colspan="3" class="p-4 text-center text-gray-500">Belum ada pengajuan izin/sakit.</td></tr>` : 
                                         db.leaves.map(l => `
                                             <tr class="hover:bg-gray-50 border-b">
                                                 <td class="p-3 font-bold">${l.name}</td>
@@ -455,23 +447,21 @@
             }
         }
 
-        // TAMBAH KARYAWAN ONLINE (Mengirim ke Google Sheets)
+        // Tambah Karyawan Baru
         async function openModalAddEmp() {
             const name = prompt("Nama Lengkap Karyawan (beserta Gelar):");
             if (!name) return;
             const email = prompt("Email Karyawan:") || '-';
-            const phone = prompt("Nomor Telepon/WA:") || '-';
+            const phone = prompt("Nomor WhatsApp:") || '-';
 
             const db = getDB();
             const id = `HWL-00${db.employees.length + 1}`;
             const newEmp = { id, name, email, phone, barcode: id };
 
-            // Simpan sementara di lokal
             db.employees.push(newEmp);
             saveLocalDB(db);
             render();
 
-            // Kirim ke Google Sheets Cloud
             try {
                 await fetch(GOOGLE_SCRIPT_URL, {
                     method: 'POST',
@@ -479,16 +469,16 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ action: 'add_employee', ...newEmp })
                 });
-                alert(`Karyawan ${name} berhasil ditambahkan ke Cloud Database!`);
+                alert(`Karyawan ${name} berhasil didaftarkan ke Cloud!`);
                 syncOnlineData();
             } catch (e) {
-                alert("Gagal terhubung ke Cloud server, namun data tersimpan lokal.");
+                alert("Gagal terhubung ke Cloud, tersimpan di memori lokal.");
             }
         }
 
-        // HAPUS KARYAWAN ONLINE (Menghapus dari Google Sheets)
+        // Hapus Karyawan
         async function deleteEmployee(id) {
-            if (confirm(`Yakin ingin menghapus karyawan ${id} dari sistem Cloud?`)) {
+            if (confirm(`Yakin hapus karyawan ${id} dari Cloud Database?`)) {
                 const db = getDB();
                 db.employees = db.employees.filter(e => String(e.id) !== String(id));
                 saveLocalDB(db);
@@ -501,7 +491,7 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ action: 'delete_employee', id: id })
                     });
-                    alert(`Karyawan berhasil dihapus dari Cloud Database!`);
+                    alert(`Karyawan terhapus dari Cloud Database!`);
                     syncOnlineData();
                 } catch (e) {
                     alert("Gagal memperbarui Cloud database.");
@@ -613,7 +603,7 @@
                         if (gpsEl) gpsEl.innerHTML = `<i class="fa-solid fa-location-dot text-red-600 mr-1"></i>${gpsLocationString}`;
                     },
                     () => {
-                        gpsLocationString = "GPS Aktif";
+                        gpsLocationString = "GPS Aktif (Akses Diberikan)";
                         if (gpsEl) gpsEl.innerHTML = `<i class="fa-solid fa-location-dot text-gold mr-1"></i>${gpsLocationString}`;
                     }
                 );
@@ -624,8 +614,8 @@
             if (empTab === 'scan') {
                 return `
                     <div class="bg-white rounded-xl shadow p-6 border border-gold/30">
-                        <h3 class="font-bold text-lg text-maroon mb-2"><i class="fa-solid fa-qrcode mr-2 text-gold"></i>Absen Kehadiran via QR Barcode</h3>
-                        <p class="text-xs text-gray-500 mb-4">Arahkan kamera HP Anda ke Barcode Kantor HWL Law Firm.</p>
+                        <h3 class="font-bold text-lg text-maroon mb-2"><i class="fa-solid fa-qrcode mr-2 text-gold"></i>Absen Kehadiran via Barcode</h3>
+                        <p class="text-xs text-gray-500 mb-4">Arahkan kamera HP Anda ke Barcode QR Kantor HWL Law Firm.</p>
 
                         <div class="space-y-4">
                             <div class="bg-black/90 rounded-xl p-3 flex flex-col items-center justify-center min-h-[220px]">
@@ -694,7 +684,7 @@
                 },
                 () => {}
             ).catch(err => {
-                alert('Tidak dapat mengakses kamera. Izinkan akses kamera di browser HP Anda.');
+                alert('Tidak dapat membuka kamera. Izinkan akses kamera pada browser HP Anda.');
             });
         }
 
@@ -703,7 +693,7 @@
             processAttendanceRecord(db.settings.officeQR);
         }
 
-        // PROSES ABSEN ONLINE
+        // Proses Absen
         async function processAttendanceRecord(scannedQR) {
             const db = getDB();
             const agenda = document.getElementById('emp-agenda-input')?.value;
@@ -730,11 +720,9 @@
                 location: gpsLocationString
             };
 
-            // Simpan lokal dulu
             db.attendance.unshift(payload);
             saveLocalDB(db);
 
-            // Kirim ke Google Sheets Cloud
             try {
                 await fetch(GOOGLE_SCRIPT_URL, {
                     method: 'POST',
@@ -745,7 +733,7 @@
                 alert(`Absen Berhasil Dicatat Online!\n\nWaktu: ${timestampStr}\nKaryawan: ${session.user.name}`);
                 syncOnlineData();
             } catch (err) {
-                alert(`Absen tersimpan lokal. Koneksi cloud bermasalah.`);
+                alert(`Absen tersimpan lokal. Terjadi kendala sinyal ke Cloud.`);
             }
 
             switchEmpTab('scan');
@@ -775,7 +763,7 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
-                alert('Pengajuan izin berhasil terkirim ke Cloud Admin!');
+                alert('Pengajuan izin terkirim ke Cloud!');
                 syncOnlineData();
             } catch (e) {
                 alert('Pengajuan izin tersimpan lokal.');
@@ -784,12 +772,11 @@
             switchEmpTab('leave');
         }
 
-        // Inisialisasi Aplikasi
+        // Inisialisasi
         render();
-        // Tarik data cloud langsung saat aplikasi pertama dibuka
         syncOnlineData();
 
-        // Polling Sinkronisasi Otomatis Setiap 8 Detik
+        // Check sinkronisasi otomatis tiap 8 detik
         setInterval(() => {
             syncOnlineData();
         }, 8000);
