@@ -65,13 +65,16 @@
 
     <!-- Footer -->
     <footer class="bg-maroon-dark text-gold py-4 text-center text-xs border-t border-gold/30">
-        <p>&copy; 2026 HWL Law Firm. All Rights Reserved. System Version 2.4 (Offline-Ready System).</p>
+        <p>&copy; 2026 HWL Law Firm. All Rights Reserved. System Version 2.5 (Online Cloud Connected).</p>
     </footer>
 
     <!-- Application Logic -->
     <script>
         // Synchronized Database Store via LocalStorage & BroadcastChannel
         const broadcast = new BroadcastChannel('hwl_firm_sync');
+
+        // URL GOOGLE APPS SCRIPT DATABASE CLOUD (TAHAP 2)
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyUhGqaAxIOxGA4V-u3YsA3y0dQ4ce5fB6tPVi74Bvz2vyxS7iUQLeZdS2vSuEKytQX/exec";
 
         const DEFAULT_DATA = {
             admin: {
@@ -833,43 +836,70 @@
             const now = new Date();
             const timestampStr = `${now.toLocaleDateString('id-ID', { weekday: 'long' })}, ${now.getDate()}/${now.getMonth()+1}/${now.getFullYear()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')} WIB`;
 
-            db.attendance.unshift({
+            const payload = {
+                action: 'absen',
                 id: session.user.id,
                 name: session.user.name,
                 timestamp: timestampStr,
                 date: now.toISOString().split('T')[0],
                 agenda: agenda,
                 location: gpsLocationString
-            });
+            };
 
+            // 1. Simpan di internal HP (sebagai backup)
+            db.attendance.unshift(payload);
             saveDB(db);
-            alert(`Absen Berhasil Dicatat!\n\nWaktu: ${timestampStr}\nKaryawan: ${session.user.name}`);
+
+            // 2. Kirim data secara online ke Google Sheets Admin
+            if (typeof GOOGLE_SCRIPT_URL !== 'undefined' && GOOGLE_SCRIPT_URL !== "") {
+                fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                })
+                .then(() => {
+                    alert(`Absen Berhasil Dicatat & Terkirim ke Admin!\n\nWaktu: ${timestampStr}\nKaryawan: ${session.user.name}`);
+                })
+                .catch(err => {
+                    alert(`Absen tersimpan lokal, namun gagal terkirim online. Cek koneksi internet.`);
+                });
+            } else {
+                alert(`Absen Berhasil Dicatat (Lokal)!\n\nWaktu: ${timestampStr}`);
+            }
+
             switchEmpTab('scan');
         }
 
         function submitEmpLeave() {
             const type = document.getElementById('leave-type-input').value;
             const reason = document.getElementById('leave-reason-input').value;
-            const photoInput = document.getElementById('leave-photo-input');
 
             if (!reason) { alert('Alasan wajib diisi!'); return; }
 
             const db = getDB();
-            if (photoInput.files && photoInput.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    db.leaves.unshift({ name: session.user.name, type, reason, photo: e.target.result });
-                    saveDB(db);
-                    alert('Permohonan izin/sakit berhasil dikirim ke Admin!');
-                    switchEmpTab('leave');
-                };
-                reader.readAsDataURL(photoInput.files[0]);
-            } else {
-                db.leaves.unshift({ name: session.user.name, type, reason, photo: '' });
-                saveDB(db);
-                alert('Permohonan izin/sakit berhasil dikirim ke Admin!');
-                switchEmpTab('leave');
+            const payload = {
+                action: 'izin',
+                id: session.user.id,
+                name: session.user.name,
+                type: type,
+                reason: reason
+            };
+
+            db.leaves.unshift({ name: session.user.name, type, reason, photo: '' });
+            saveDB(db);
+
+            if (typeof GOOGLE_SCRIPT_URL !== 'undefined' && GOOGLE_SCRIPT_URL !== "") {
+                fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
             }
+
+            alert('Permohonan izin/sakit berhasil dikirim ke Admin!');
+            switchEmpTab('leave');
         }
 
         function updateEmpProfilePhoto() {
