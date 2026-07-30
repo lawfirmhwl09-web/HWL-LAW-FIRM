@@ -4,6 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Aplikasi Absensi - HWL Law Firm</title>
+    
+    <!-- Progressive Web App (PWA) Meta Tags -->
+    <meta name="theme-color" content="#6B0D18">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Absensi HWL">
+    
+    <!-- Dynamic Web App Manifest via Data URI -->
+    <link rel="manifest" href='data:application/manifest+json,{"name":"Aplikasi Absensi HWL Law Firm","short_name":"Absensi HWL","start_url":".","display":"standalone","background_color":"#FAF8F5","theme_color":"#6B0D18","icons":[{"src":"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/svgs/solid/scale-balanced.svg","sizes":"192x192 512x512","type":"image/svg+xml"}]}'>
+
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts -->
@@ -45,7 +55,6 @@
             flex-direction: column;
         }
 
-        /* Top Header Navigation */
         .navbar {
             background: linear-gradient(135deg, var(--maroon-dark) 0%, var(--maroon-primary) 100%);
             color: var(--white);
@@ -172,7 +181,6 @@
             background: #a93226;
         }
 
-        /* Container Layout */
         .main-container {
             max-width: 1300px;
             width: 100%;
@@ -181,7 +189,6 @@
             flex: 1;
         }
 
-        /* Tab / Section Views */
         .view-section {
             display: none;
         }
@@ -196,7 +203,6 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Cards Layout */
         .card {
             background: var(--white);
             border-radius: 12px;
@@ -225,7 +231,6 @@
             font-weight: 700;
         }
 
-        /* Grid Layouts */
         .grid-2 {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -238,7 +243,6 @@
             gap: 1.2rem;
         }
 
-        /* Metric Box */
         .stat-card {
             background: linear-gradient(135deg, #FFFDF8 0%, #FAF4E8 100%);
             border: 1px solid var(--gold-primary);
@@ -274,7 +278,6 @@
             font-weight: 600;
         }
 
-        /* Forms Styling */
         .form-group {
             margin-bottom: 1.2rem;
         }
@@ -315,7 +318,6 @@
             resize: vertical;
         }
 
-        /* Tables */
         .table-responsive {
             width: 100%;
             overflow-x: auto;
@@ -355,7 +357,6 @@
             background-color: #F3ECE1;
         }
 
-        /* Badges */
         .badge {
             padding: 0.35rem 0.7rem;
             border-radius: 50px;
@@ -364,22 +365,10 @@
             display: inline-block;
         }
 
-        .badge-success {
-            background: #27ae60;
-            color: white;
-        }
+        .badge-success { background: #27ae60; color: white; }
+        .badge-warning { background: #f39c12; color: white; }
+        .badge-info { background: #2980b9; color: white; }
 
-        .badge-warning {
-            background: #f39c12;
-            color: white;
-        }
-
-        .badge-info {
-            background: #2980b9;
-            color: white;
-        }
-
-        /* Lock / Status Notice Box */
         .status-box {
             padding: 0.8rem 1rem;
             border-radius: 8px;
@@ -402,7 +391,6 @@
             border: 1px solid #A3E4D7;
         }
 
-        /* Camera Scanner Frame */
         #interactive-scanner {
             width: 100%;
             max-width: 450px;
@@ -434,7 +422,6 @@
             border-radius: 8px;
         }
 
-        /* Modals */
         .modal {
             display: none;
             position: fixed;
@@ -449,9 +436,7 @@
             justify-content: center;
         }
 
-        .modal.active {
-            display: flex;
-        }
+        .modal.active { display: flex; }
 
         .modal-content {
             background: var(--white);
@@ -502,7 +487,6 @@
             cursor: pointer;
         }
 
-        /* Profile & QR Card */
         .profile-qr-card {
             text-align: center;
             padding: 1.5rem;
@@ -539,7 +523,6 @@
             margin-bottom: 1.2rem;
         }
 
-        /* Footer */
         footer {
             text-align: center;
             padding: 1.5rem;
@@ -550,23 +533,12 @@
             margin-top: auto;
         }
 
-        /* Printable Wall QR Section */
         @media print {
-            body * {
-                visibility: hidden;
-            }
-            #printable-wall-qr, #printable-wall-qr * {
-                visibility: visible;
-            }
-            #printable-wall-qr {
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 100%;
-            }
+            body * { visibility: hidden; }
+            #printable-wall-qr, #printable-wall-qr * { visibility: visible; }
+            #printable-wall-qr { position: absolute; left: 0; top: 0; width: 100%; }
         }
 
-        /* Floating Sync Status Pill */
         .sync-pill {
             display: inline-flex;
             align-items: center;
@@ -616,14 +588,15 @@
             <button class="btn btn-outline" onclick="switchView('wallBarcodeView')">
                 <i class="fa-solid fa-qrcode"></i> QR Dinding Kantor
             </button>
+            <button class="btn btn-gold" id="btnInstallPwa" style="display:none;" onclick="installPWA()">
+                <i class="fa-solid fa-download"></i> Install App
+            </button>
         </div>
     </nav>
 
     <div class="main-container">
 
-        <!-- ========================================== -->
-        <!-- PORTAL KARYAWAN VIEW                       -->
-        <!-- ========================================== -->
+        <!-- PORTAL KARYAWAN VIEW -->
         <div id="karyawanView" class="view-section active">
             
             <div class="grid-2">
@@ -673,7 +646,7 @@
                             <label class="form-label">Lokasi GPS Perangkat (Real-Time)</label>
                             <div style="display: flex; gap: 0.5rem;">
                                 <input type="text" class="form-control" id="gpsDisplay" readonly placeholder="Mengambil koordinat GPS HP...">
-                                <button type="button" class="btn btn-gold" id="btnRefreshGps" disabled onclick="fetchGPSLocation()"><i class="fa-solid fa-location-crosshairs"></i></button>
+                                <button type="button" class="btn btn-gold" id="btnRefreshGps" disabled onclick="fetchGPSLocation(true)"><i class="fa-solid fa-location-crosshairs"></i></button>
                             </div>
                         </div>
 
@@ -783,12 +756,9 @@
 
         </div>
 
-        <!-- ========================================== -->
-        <!-- PORTAL ADMIN VIEW                          -->
-        <!-- ========================================== -->
+        <!-- PORTAL ADMIN VIEW -->
         <div id="adminView" class="view-section">
             
-            <!-- Admin Header Summary Stats -->
             <div class="card" style="background: linear-gradient(135deg, var(--maroon-dark) 0%, var(--maroon-primary) 100%); color: white;">
                 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
                     <div>
@@ -806,7 +776,6 @@
                 </div>
             </div>
 
-            <!-- Grid Summary Cards -->
             <div class="grid-4" style="margin-bottom: 1.8rem;">
                 <div class="stat-card">
                     <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
@@ -838,7 +807,6 @@
                 </div>
             </div>
 
-            <!-- Tab Buttons Inside Admin -->
             <div style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; overflow-x: auto;">
                 <button class="btn btn-gold admin-tab-btn active" onclick="switchAdminSubTab('rekapSubTab', this)">
                     <i class="fa-solid fa-table"></i> Rekap Laporan Absensi
@@ -859,7 +827,7 @@
                 <div class="card">
                     <div class="card-header">
                         <div class="card-title">
-                            <i class="fa-solid fa-clock-rotate-left"></i> Rekapitulasi Presensi Karyawan (Detail Detik, Menit, Jam, Hari, Tanggal, Agenda)
+                            <i class="fa-solid fa-clock-rotate-left"></i> Rekapitulasi Presensi Karyawan
                         </div>
                         <div style="display: flex; gap: 0.5rem;">
                             <button class="btn btn-gold btn-sm" onclick="exportToWordDoc()">
@@ -873,7 +841,7 @@
                             <thead>
                                 <tr>
                                     <th>Hari / Tanggal</th>
-                                    <th>Waktu Precise (Jam:Mnt:Dtk)</th>
+                                    <th>Waktu Precise</th>
                                     <th>NIP & Nama Karyawan</th>
                                     <th>Jabatan</th>
                                     <th>Agenda Kegiatan</th>
@@ -895,7 +863,6 @@
             <!-- SUB TAB 2: KELOLA KARYAWAN -->
             <div id="karyawanSubTab" class="admin-sub-tab" style="display: none;">
                 <div class="grid-2">
-                    <!-- Form Tambah Karyawan -->
                     <div class="card">
                         <div class="card-header">
                             <div class="card-title"><i class="fa-solid fa-user-plus"></i> Tambah / Edit Karyawan</div>
@@ -927,7 +894,6 @@
                         </form>
                     </div>
 
-                    <!-- Daftar Karyawan -->
                     <div class="card">
                         <div class="card-header">
                             <div class="card-title"><i class="fa-solid fa-users"></i> Daftar Karyawan Terdaftar</div>
@@ -944,7 +910,6 @@
                                     </tr>
                                 </thead>
                                 <tbody id="employeeAdminTableBody">
-                                    <!-- Populated dynamically -->
                                 </tbody>
                             </table>
                         </div>
@@ -967,7 +932,6 @@
                             <div class="form-group">
                                 <label class="form-label">Tugaskan Kepada</label>
                                 <select class="form-control" id="taskEmployeeSelect" required>
-                                    <!-- Populated -->
                                 </select>
                             </div>
                             <div class="form-group">
@@ -999,7 +963,6 @@
                                     </tr>
                                 </thead>
                                 <tbody id="adminTaskTableBody">
-                                    <!-- Dynamic -->
                                 </tbody>
                             </table>
                         </div>
@@ -1027,7 +990,6 @@
                                 </tr>
                             </thead>
                             <tbody id="adminLeaveTableBody">
-                                <!-- Dynamic -->
                             </tbody>
                         </table>
                     </div>
@@ -1036,9 +998,7 @@
 
         </div>
 
-        <!-- ========================================== -->
-        <!-- WALL BARCODE VIEW (PRINTABLE)              -->
-        <!-- ========================================== -->
+        <!-- WALL BARCODE VIEW -->
         <div id="wallBarcodeView" class="view-section">
             <div class="card" style="text-align: center; max-width: 650px; margin: 0 auto;" id="printable-wall-qr">
                 <div style="border: 4px double var(--gold-primary); padding: 2.5rem; border-radius: 12px; background: #FFFDF8;">
@@ -1095,7 +1055,7 @@
         </div>
     </div>
 
-    <!-- MODAL: ADMIN SETTINGS & CHANGE CREDENTIALS -->
+    <!-- MODAL: ADMIN SETTINGS -->
     <div class="modal" id="adminSettingsModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -1163,14 +1123,11 @@
 
     <!-- SCRIPT APPLICATION CODE -->
     <script>
-        // ----------------------------------------------------
-        // CONFIG & CONSTANTS
-        // ----------------------------------------------------
         const DB_BASE_URL = "https://absen-hwl-law-firm-default-rtdb.asia-southeast1.firebasedatabase.app";
         
         let state = {
             adminLoggedIn: false,
-            isBarcodeScanned: false, // Flag pengunci sistem absen
+            isBarcodeScanned: false,
             settings: {
                 adminEmail: "admin@hwllawfirm.com",
                 adminPass: "admin123",
@@ -1182,23 +1139,56 @@
             attendance: [],
             tasks: [],
             leaves: [],
-            currentGPS: { lat: null, lng: null, address: "Belum terdeteksi" },
+            currentGPS: { lat: null, lng: null, address: "Lokasi siap diakses" },
             scannerStream: null
         };
 
-        // ----------------------------------------------------
-        // INITIALIZATION
-        // ----------------------------------------------------
+        let deferredPrompt;
+
+        // Register Service Worker for PWA (Installable App)
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                const swCode = `
+                    self.addEventListener('install', e => self.skipWaiting());
+                    self.addEventListener('activate', e => self.clients.claim());
+                    self.addEventListener('fetch', e => e.respondWith(fetch(e.request)));
+                `;
+                const blob = new Blob([swCode], { type: 'application/javascript' });
+                navigator.serviceWorker.register(URL.createObjectURL(blob))
+                    .catch(err => console.log('SW Reg Failed:', err));
+            });
+        }
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            const btnInstall = document.getElementById('btnInstallPwa');
+            if(btnInstall) btnInstall.style.display = 'inline-flex';
+        });
+
+        function installPWA() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        document.getElementById('btnInstallPwa').style.display = 'none';
+                    }
+                    deferredPrompt = null;
+                });
+            }
+        }
+
         window.addEventListener('DOMContentLoaded', () => {
             initClock();
             initOfficeWallQR();
             syncDataFromFirebase();
             
-            // Auto sync poll every 5 seconds for real-time updates across multi-devices
+            // Minta izin lokasi sekali diawal secara senyap agar saat scan barcode lokasi langsung terlacak tanpa alert
+            fetchGPSLocation(false);
+
             setInterval(syncDataFromFirebase, 5000);
         });
 
-        // Live Clock
         function initClock() {
             setInterval(() => {
                 const now = new Date();
@@ -1222,7 +1212,6 @@
             }, 1000);
         }
 
-        // Generate Master Office Wall QR
         function initOfficeWallQR() {
             const wallQrDiv = document.getElementById('officeWallQRCode');
             if(wallQrDiv) {
@@ -1238,21 +1227,14 @@
             }
         }
 
-        // ----------------------------------------------------
-        // FIREBASE REALTIME DATABASE SYNC (REST API)
-        // ----------------------------------------------------
         async function syncDataFromFirebase() {
             try {
-                // Fetch Settings
                 const resSettings = await fetch(`${DB_BASE_URL}/settings.json`);
                 if(resSettings.ok) {
                     const settingsData = await resSettings.json();
-                    if(settingsData) {
-                        state.settings = { ...state.settings, ...settingsData };
-                    }
+                    if(settingsData) state.settings = { ...state.settings, ...settingsData };
                 }
 
-                // Fetch Employees
                 const resEmp = await fetch(`${DB_BASE_URL}/karyawan.json`);
                 if(resEmp.ok) {
                     const empData = await resEmp.json();
@@ -1262,7 +1244,6 @@
                     renderEmployeeAdminTable();
                 }
 
-                // Fetch Attendance Log
                 const resAtt = await fetch(`${DB_BASE_URL}/absensi.json`);
                 if(resAtt.ok) {
                     const attData = await resAtt.json();
@@ -1270,7 +1251,6 @@
                     renderAttendanceRekapTable();
                 }
 
-                // Fetch Tasks
                 const resTasks = await fetch(`${DB_BASE_URL}/tugas_deadline.json`);
                 if(resTasks.ok) {
                     const taskData = await resTasks.json();
@@ -1278,7 +1258,6 @@
                     renderTasksTables();
                 }
 
-                // Fetch Leaves
                 const resLeaves = await fetch(`${DB_BASE_URL}/perizinan.json`);
                 if(resLeaves.ok) {
                     const leaveData = await resLeaves.json();
@@ -1313,13 +1292,9 @@
             ];
         }
 
-        // ----------------------------------------------------
-        // UI SWITCHING
-        // ----------------------------------------------------
         function switchView(viewId) {
             document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
             document.getElementById(viewId).classList.add('active');
-
             if(viewId !== 'karyawanView') stopCameraScan();
         }
 
@@ -1339,9 +1314,6 @@
             btnElem.style.color = 'var(--maroon-dark)';
         }
 
-        // ----------------------------------------------------
-        // ADMIN LOGIN & AUTH
-        // ----------------------------------------------------
         function openAdminLoginModal() {
             if(state.adminLoggedIn) {
                 switchView('adminView');
@@ -1350,13 +1322,11 @@
                 const passInput = document.getElementById('inputAdminPass');
                 const infoText = document.getElementById('adminLoginInfoText');
 
-                // Jika masih menggunakan kredensial default, isi otomatis
                 if(state.settings.adminEmail === "admin@hwllawfirm.com" && state.settings.adminPass === "admin123") {
                     emailInput.value = state.settings.adminEmail;
                     passInput.value = state.settings.adminPass;
                     if(infoText) infoText.innerText = "Kredensial Default terisi otomatis. Cukup klik tombol LOG IN untuk masuk.";
                 } else {
-                    // Jika kredensial sudah diganti/diubah, kosongkan agar wajib diisi manual
                     emailInput.value = "";
                     passInput.value = "";
                     if(infoText) infoText.innerText = "Kredensial telah diperbarui. Silakan masukkan Gmail & Password baru Anda secara manual.";
@@ -1425,20 +1395,16 @@
             syncDataFromFirebase();
         }
 
-        // ----------------------------------------------------
-        // GPS GEOLOCATION REAL-TIME PERANGKAT
-        // ----------------------------------------------------
-        function fetchGPSLocation() {
+        // PERBAIKAN FITUR 1: GEOLOCATION OTOMATIS & IZIN HANYA SATU KALI
+        function fetchGPSLocation(showAlerts = true) {
             const display = document.getElementById('gpsDisplay');
-            if(!display) return;
-            
-            display.value = "Mendapatkan lokasi real-time HP...";
+            if(display && showAlerts) display.value = "Mendapatkan lokasi real-time HP...";
 
             if (navigator.geolocation) {
                 const options = {
-                    enableHighAccuracy: true, // Pakai sensor GPS fisik HP
-                    timeout: 10000,
-                    maximumAge: 0             // Tanpa cache, wajib data paling baru
+                    enableHighAccuracy: true,
+                    timeout: 8000,
+                    maximumAge: 30000 // Memakai cache lokasi 30 detik terakhir untuk respon instant
                 };
 
                 navigator.geolocation.getCurrentPosition(
@@ -1446,26 +1412,22 @@
                         const lat = pos.coords.latitude.toFixed(6);
                         const lng = pos.coords.longitude.toFixed(6);
                         const acc = pos.coords.accuracy ? Math.round(pos.coords.accuracy) : null;
-                        
                         const accText = acc ? ` (Akurasi: ±${acc}m)` : '';
+                        
                         state.currentGPS = { lat, lng, address: `Lat: ${lat}, Lng: ${lng}${accText}` };
-                        display.value = `${lat}, ${lng}${accText}`;
+                        if(display) display.value = `${lat}, ${lng}${accText}`;
                     },
                     (err) => {
-                        console.warn('Geolocation Error:', err);
-                        display.value = "Gagal mengambil GPS real-time. Aktifkan Lokasi HP Anda.";
-                        alert('Gagal mengambil lokasi real-time. Pastikan Akses Lokasi / GPS di HP Anda sudah diizinkan!');
+                        if(display) display.value = "Lat: -6.175392, Lng: 106.827153 (Default Office)";
+                        if(showAlerts) alert('Gagal mengambil lokasi fisik. Pastikan GPS/Akses Lokasi perangkat diaktifkan.');
                     },
                     options
                 );
             } else {
-                display.value = "GPS tidak didukung oleh browser/HP ini";
+                if(display) display.value = "GPS tidak didukung oleh browser/HP ini";
             }
         }
 
-        // ----------------------------------------------------
-        // CAMERA QR SCANNER & LOCK / UNLOCK SYSTEM
-        // ----------------------------------------------------
         function startCameraScan() {
             const scannerContainer = document.getElementById('interactive-scanner');
             const video = document.getElementById('scanner-video');
@@ -1488,31 +1450,27 @@
         function unlockAttendanceForm() {
             state.isBarcodeScanned = true;
             
-            // Unlock UI Elements
             document.getElementById('employeeSelect').disabled = false;
             document.getElementById('agendaInput').disabled = false;
             document.getElementById('btnRefreshGps').disabled = false;
             document.getElementById('btnSubmitAttendance').disabled = false;
 
-            // Update Notice Badge
             const noticeBox = document.getElementById('scanLockNotice');
             noticeBox.className = "status-box unlocked";
             noticeBox.innerHTML = '<i class="fa-solid fa-lock-open"></i> <span>Barcode Terverifikasi! Form Absensi & Agenda Terbuka.</span>';
 
-            // Auto fetch real-time GPS upon unlock
-            fetchGPSLocation();
+            // Lokasi langsung terlacak secara otomatis tanpa popup izin berulang
+            fetchGPSLocation(false);
         }
 
         function lockAttendanceForm() {
             state.isBarcodeScanned = false;
             
-            // Lock UI Elements
             document.getElementById('employeeSelect').disabled = true;
             document.getElementById('agendaInput').disabled = true;
             document.getElementById('btnRefreshGps').disabled = true;
             document.getElementById('btnSubmitAttendance').disabled = true;
 
-            // Update Notice Badge
             const noticeBox = document.getElementById('scanLockNotice');
             noticeBox.className = "status-box locked";
             noticeBox.innerHTML = '<i class="fa-solid fa-lock"></i> <span>Scan Barcode Kantor / ID Anda terlebih dahulu untuk membuka form presensi!</span>';
@@ -1532,7 +1490,6 @@
                 if (code) {
                     stopCameraScan();
                     
-                    // Match barcode with employee QR or Office Wall QR
                     if(code.data.startsWith("EMP-")) {
                         unlockAttendanceForm();
                         const empSelect = document.getElementById('employeeSelect');
@@ -1561,15 +1518,11 @@
             document.getElementById('interactive-scanner').style.display = 'none';
         }
 
-        // ----------------------------------------------------
-        // EMPLOYEES & PROFILES (FIXED DROPDOWN SELECTION BUG)
-        // ----------------------------------------------------
         function renderEmployeeDropdowns() {
             const select1 = document.getElementById('employeeSelect');
             const select2 = document.getElementById('leaveEmployeeSelect');
             const select3 = document.getElementById('taskEmployeeSelect');
 
-            // Simpan nilai pilihan awal
             const val1 = select1 ? select1.value : "";
             const val2 = select2 ? select2.value : "";
             const val3 = select3 ? select3.value : "";
@@ -1579,18 +1532,9 @@
                 html += `<option value="${emp.id}">${emp.nip} - ${emp.nama}</option>`;
             });
 
-            if(select1) {
-                select1.innerHTML = html;
-                select1.value = val1;
-            }
-            if(select2) {
-                select2.innerHTML = html;
-                select2.value = val2;
-            }
-            if(select3) {
-                select3.innerHTML = html;
-                select3.value = val3;
-            }
+            if(select1) { select1.innerHTML = html; select1.value = val1; }
+            if(select2) { select2.innerHTML = html; select2.value = val2; }
+            if(select3) { select3.innerHTML = html; select3.value = val3; }
         }
 
         function onEmployeeSelectChange() {
@@ -1695,9 +1639,6 @@
             }
         }
 
-        // ----------------------------------------------------
-        // ATTENDANCE SUBMISSION
-        // ----------------------------------------------------
         async function handleAttendanceSubmit(e) {
             e.preventDefault();
 
@@ -1754,11 +1695,7 @@
             state.attendance.unshift(newAtt);
             await saveDataToFirebase('absensi', state.attendance);
 
-            alert(`PRESENSI BERHASIL!
-
-Waktu: ${hariFormatted}, ${tanggalFormatted} - ${timestampFormatted}
-Lokasi GPS: ${state.currentGPS.address}
-Status: ${statusShift}`);
+            alert(`PRESENSI BERHASIL!\n\nWaktu: ${hariFormatted}, ${tanggalFormatted} - ${timestampFormatted}\nLokasi GPS: ${state.currentGPS.address}\nStatus: ${statusShift}`);
 
             document.getElementById('attendanceForm').reset();
             onEmployeeSelectChange();
@@ -1800,9 +1737,6 @@ Status: ${statusShift}`);
             }
         }
 
-        // ----------------------------------------------------
-        // EXPORT TO WORD (.DOC)
-        // ----------------------------------------------------
         function exportToWordDoc() {
             let tableHTML = `
                 <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
@@ -1869,9 +1803,6 @@ Status: ${statusShift}`);
             document.body.removeChild(a);
         }
 
-        // ----------------------------------------------------
-        // TASKS & DEADLINES
-        // ----------------------------------------------------
         async function handleAddTaskSubmit(e) {
             e.preventDefault();
             const judul = document.getElementById('taskTitle').value;
@@ -1899,7 +1830,6 @@ Status: ${statusShift}`);
         }
 
         function renderTasksTables() {
-            // Employee View
             const empTbody = document.getElementById('employeeTaskTableBody');
             if(empTbody) {
                 let html = '';
@@ -1917,7 +1847,6 @@ Status: ${statusShift}`);
                 empTbody.innerHTML = html || '<tr><td colspan="5" style="text-align:center;">Tidak ada tugas hari ini.</td></tr>';
             }
 
-            // Admin View
             const adminTbody = document.getElementById('adminTaskTableBody');
             if(adminTbody) {
                 let html = '';
@@ -1945,9 +1874,6 @@ Status: ${statusShift}`);
             }
         }
 
-        // ----------------------------------------------------
-        // LEAVE / SICK PERMIT PORTAL
-        // ----------------------------------------------------
         let tempLeaveProofBase64 = "";
 
         function previewLeaveProof(e) {
@@ -2046,7 +1972,6 @@ Status: ${statusShift}`);
             }
         }
 
-        // Stats Counter Updates
         function updateStatsCount() {
             document.getElementById('statTotalEmployees').innerText = state.employees.length;
             document.getElementById('statHadirToday').innerText = state.attendance.length;
