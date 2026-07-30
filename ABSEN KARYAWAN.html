@@ -1139,7 +1139,7 @@
             attendance: [],
             tasks: [],
             leaves: [],
-            currentGPS: { lat: null, lng: null, address: "Lokasi siap diakses" },
+            currentGPS: { lat: null, lng: null, address: "Jl. Perumahan Banuaran Indah No.09 Blok Q, RT.001/RW.012, Banuaran Nan XX, Kec. Lubuk Begalung, Kota Padang, Sumatera Barat 25222" },
             scannerStream: null
         };
 
@@ -1183,7 +1183,10 @@
             initOfficeWallQR();
             syncDataFromFirebase();
             
-            // Minta izin lokasi sekali diawal secara senyap agar saat scan barcode lokasi langsung terlacak tanpa alert
+            // Set default address to new location immediately
+            const display = document.getElementById('gpsDisplay');
+            if(display) display.value = state.currentGPS.address;
+
             fetchGPSLocation(false);
 
             setInterval(syncDataFromFirebase, 5000);
@@ -1395,16 +1398,16 @@
             syncDataFromFirebase();
         }
 
-        // PERBAIKAN FITUR 1: GEOLOCATION OTOMATIS & IZIN HANYA SATU KALI
+        // GEOLOCATION & REAL-TIME LOCATION LOCK CONFIGURATION
         function fetchGPSLocation(showAlerts = true) {
             const display = document.getElementById('gpsDisplay');
-            if(display && showAlerts) display.value = "Mendapatkan lokasi real-time HP...";
+            if(display && showAlerts) display.value = "Memperbarui lokasi real-time...";
 
             if (navigator.geolocation) {
                 const options = {
                     enableHighAccuracy: true,
                     timeout: 8000,
-                    maximumAge: 30000 // Memakai cache lokasi 30 detik terakhir untuk respon instant
+                    maximumAge: 30000
                 };
 
                 navigator.geolocation.getCurrentPosition(
@@ -1412,19 +1415,25 @@
                         const lat = pos.coords.latitude.toFixed(6);
                         const lng = pos.coords.longitude.toFixed(6);
                         const acc = pos.coords.accuracy ? Math.round(pos.coords.accuracy) : null;
-                        const accText = acc ? ` (Akurasi: ±${acc}m)` : '';
+                        const accText = acc ? ` (±${acc}m)` : '';
                         
-                        state.currentGPS = { lat, lng, address: `Lat: ${lat}, Lng: ${lng}${accText}` };
-                        if(display) display.value = `${lat}, ${lng}${accText}`;
+                        // Set fixed real-time location address as requested
+                        const fixedAddress = `Jl. Perumahan Banuaran Indah No.09 Blok Q, RT.001/RW.012, Banuaran Nan XX, Kec. Lubuk Begalung, Kota Padang, Sumatera Barat 25222 [Lat: ${lat}, Lng: ${lng}${accText}]`;
+                        state.currentGPS = { lat, lng, address: fixedAddress };
+                        if(display) display.value = fixedAddress;
                     },
                     (err) => {
-                        if(display) display.value = "Lat: -6.175392, Lng: 106.827153 (Default Office)";
-                        if(showAlerts) alert('Gagal mengambil lokasi fisik. Pastikan GPS/Akses Lokasi perangkat diaktifkan.');
+                        const fallbackAddress = "Jl. Perumahan Banuaran Indah No.09 Blok Q, RT.001/RW.012, Banuaran Nan XX, Kec. Lubuk Begalung, Kota Padang, Sumatera Barat 25222";
+                        state.currentGPS = { lat: "-0.975", lng: "100.375", address: fallbackAddress };
+                        if(display) display.value = fallbackAddress;
+                        if(showAlerts) alert('Menggunakan lokasi kantor pusat terdaftar.');
                     },
                     options
                 );
             } else {
-                if(display) display.value = "GPS tidak didukung oleh browser/HP ini";
+                const defaultAddress = "Jl. Perumahan Banuaran Indah No.09 Blok Q, RT.001/RW.012, Banuaran Nan XX, Kec. Lubuk Begalung, Kota Padang, Sumatera Barat 25222";
+                state.currentGPS = { lat: "-0.975", lng: "100.375", address: defaultAddress };
+                if(display) display.value = defaultAddress;
             }
         }
 
@@ -1459,7 +1468,6 @@
             noticeBox.className = "status-box unlocked";
             noticeBox.innerHTML = '<i class="fa-solid fa-lock-open"></i> <span>Barcode Terverifikasi! Form Absensi & Agenda Terbuka.</span>';
 
-            // Lokasi langsung terlacak secara otomatis tanpa popup izin berulang
             fetchGPSLocation(false);
         }
 
@@ -1972,12 +1980,12 @@
             }
         }
 
-        function updateStatsCount() {
+        updateStatsCount = function() {
             document.getElementById('statTotalEmployees').innerText = state.employees.length;
             document.getElementById('statHadirToday').innerText = state.attendance.length;
             document.getElementById('statIzinToday').innerText = state.leaves.length;
             document.getElementById('statPendingTasks').innerText = state.tasks.filter(t => t.status === 'Pending').length;
-        }
+        };
     </script>
 </body>
 </html>
