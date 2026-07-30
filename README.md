@@ -109,8 +109,15 @@
             transition: all 0.25s ease;
             display: inline-flex;
             align-items: center;
+            justify-content: center;
             gap: 0.5rem;
             text-decoration: none;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed !important;
+            filter: grayscale(1);
         }
 
         .btn-gold {
@@ -119,7 +126,7 @@
             border: 1px solid var(--gold-light);
         }
 
-        .btn-gold:hover {
+        .btn-gold:hover:not(:disabled) {
             background: var(--gold-light);
             box-shadow: 0 0 12px rgba(212, 175, 55, 0.5);
             transform: translateY(-1px);
@@ -131,7 +138,7 @@
             border: 1px solid var(--gold-primary);
         }
 
-        .btn-maroon:hover {
+        .btn-maroon:hover:not(:disabled) {
             background: var(--maroon-light);
             transform: translateY(-1px);
         }
@@ -290,7 +297,13 @@
             background: #FAFAFA;
         }
 
-        .form-control:focus {
+        .form-control:disabled {
+            background-color: #f0f0f0;
+            cursor: not-allowed;
+            color: #888;
+        }
+
+        .form-control:focus:not(:disabled) {
             outline: none;
             border-color: var(--gold-primary);
             background: #FFF;
@@ -364,6 +377,29 @@
         .badge-info {
             background: #2980b9;
             color: white;
+        }
+
+        /* Lock / Status Notice Box */
+        .status-box {
+            padding: 0.8rem 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.2rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            transition: all 0.3s ease;
+        }
+        .status-box.locked {
+            background: #FDEDEC;
+            color: #C0392B;
+            border: 1px solid #F5B7B1;
+        }
+        .status-box.unlocked {
+            background: #E8F8F5;
+            color: #117864;
+            border: 1px solid #A3E4D7;
         }
 
         /* Camera Scanner Frame */
@@ -602,6 +638,12 @@
                     <div class="live-clock" id="liveClockDisplay">00:00:00</div>
                     <div class="live-date" id="liveDateDisplay">Kamis, 30 Juli 2026</div>
 
+                    <!-- Status Lock / Unlock Notice -->
+                    <div class="status-box locked" id="scanLockNotice">
+                        <i class="fa-solid fa-lock"></i>
+                        <span id="scanNoticeText">Scan Barcode Kantor / ID Anda terlebih dahulu untuk membuka form presensi!</span>
+                    </div>
+
                     <!-- Mode Selector for Scan -->
                     <div class="form-group" style="text-align: center; margin-bottom: 1.2rem;">
                         <button class="btn btn-maroon btn-sm" onclick="startCameraScan()"><i class="fa-solid fa-video"></i> Buka Kamera HP Scan QR Kantor</button>
@@ -617,25 +659,25 @@
                     <form id="attendanceForm" onsubmit="handleAttendanceSubmit(event)">
                         <div class="form-group">
                             <label class="form-label">Pilih ID / Nama Karyawan</label>
-                            <select class="form-control" id="employeeSelect" required onchange="onEmployeeSelectChange()">
+                            <select class="form-control" id="employeeSelect" required disabled onchange="onEmployeeSelectChange()">
                                 <option value="">-- Pilih Nama Anda --</option>
                             </select>
                         </div>
 
                         <div class="form-group">
                             <label class="form-label">Agenda Kegiatan Hari Ini</label>
-                            <textarea class="form-control" id="agendaInput" placeholder="Tuliskan detail agenda persidangan, riset hukum, pendampingan klien, atau tugas hari ini..." required></textarea>
+                            <textarea class="form-control" id="agendaInput" disabled placeholder="Tuliskan detail agenda persidangan, riset hukum, pendampingan klien, atau tugas hari ini..." required></textarea>
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label">Lokasi GPS (Otomatis)</label>
+                            <label class="form-label">Lokasi GPS Perangkat (Real-Time)</label>
                             <div style="display: flex; gap: 0.5rem;">
-                                <input type="text" class="form-control" id="gpsDisplay" readonly placeholder="Mengambil koordinat GPS...">
-                                <button type="button" class="btn btn-gold" onclick="fetchGPSLocation()"><i class="fa-solid fa-location-crosshairs"></i></button>
+                                <input type="text" class="form-control" id="gpsDisplay" readonly placeholder="Mengambil koordinat GPS HP...">
+                                <button type="button" class="btn btn-gold" id="btnRefreshGps" disabled onclick="fetchGPSLocation()"><i class="fa-solid fa-location-crosshairs"></i></button>
                             </div>
                         </div>
 
-                        <button type="submit" class="btn btn-gold" style="width: 100%; padding: 0.9rem; font-size: 1rem;">
+                        <button type="submit" class="btn btn-gold" id="btnSubmitAttendance" disabled style="width: 100%; padding: 0.9rem; font-size: 1rem;">
                             <i class="fa-solid fa-fingerprint"></i> KIRIM PRESENSI SEKARANG
                         </button>
                     </form>
@@ -1029,27 +1071,23 @@
                 <button class="close-btn" onclick="closeAdminLoginModal()">&times;</button>
             </div>
             <div class="modal-body">
-                <div style="background: #FAF4E8; border-left: 4px solid var(--gold-primary); padding: 0.8rem; font-size: 0.82rem; margin-bottom: 1.2rem; color: var(--maroon-dark);">
-                    <strong>Default Login:</strong><br>
-                    Email: <span id="lblDefaultEmail">admin@hwllawfirm.com</span><br>
-                    Password: <span id="lblDefaultPass">admin123</span>
+                <div style="background: #FAF4E8; border-left: 4px solid var(--gold-primary); padding: 0.8rem; font-size: 0.82rem; margin-bottom: 1.2rem; color: var(--maroon-dark);" id="adminLoginInfoBox">
+                    <strong>Status Akses Admin:</strong><br>
+                    <span id="adminLoginInfoText">Default login terisi otomatis. Silakan klik tombol Log In.</span>
                 </div>
                 <form id="adminLoginForm" onsubmit="handleAdminLogin(event)">
                     <div class="form-group">
                         <label class="form-label">Gmail / Email Admin</label>
-                        <input type="email" class="form-control" id="inputAdminEmail" value="admin@hwllawfirm.com" required>
+                        <input type="email" class="form-control" id="inputAdminEmail" required placeholder="Masukkan Gmail Admin">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Password</label>
-                        <input type="password" class="form-control" id="inputAdminPass" value="admin123" required>
+                        <input type="password" class="form-control" id="inputAdminPass" required placeholder="Masukkan Password Admin">
                     </div>
                     
-                    <div style="display: flex; gap: 0.8rem; margin-top: 1.5rem;">
-                        <button type="button" class="btn btn-gold" style="flex: 1;" onclick="quickBypassAdminLogin()">
-                            <i class="fa-solid fa-bolt"></i> Login Langsung (Default)
-                        </button>
-                        <button type="submit" class="btn btn-maroon" style="flex: 1;">
-                            <i class="fa-solid fa-right-to-bracket"></i> Login Manual
+                    <div style="margin-top: 1.5rem;">
+                        <button type="submit" class="btn btn-maroon" style="width: 100%; padding: 0.85rem; font-size: 1rem;">
+                            <i class="fa-solid fa-right-to-bracket"></i> LOG IN
                         </button>
                     </div>
                 </form>
@@ -1132,6 +1170,7 @@
         
         let state = {
             adminLoggedIn: false,
+            isBarcodeScanned: false, // Flag pengunci sistem absen
             settings: {
                 adminEmail: "admin@hwllawfirm.com",
                 adminPass: "admin123",
@@ -1153,7 +1192,6 @@
         window.addEventListener('DOMContentLoaded', () => {
             initClock();
             initOfficeWallQR();
-            fetchGPSLocation();
             syncDataFromFirebase();
             
             // Auto sync poll every 5 seconds for real-time updates across multi-devices
@@ -1211,8 +1249,6 @@
                     const settingsData = await resSettings.json();
                     if(settingsData) {
                         state.settings = { ...state.settings, ...settingsData };
-                        document.getElementById('lblDefaultEmail').innerText = state.settings.adminEmail;
-                        document.getElementById('lblDefaultPass').innerText = state.settings.adminPass;
                     }
                 }
 
@@ -1310,20 +1346,28 @@
             if(state.adminLoggedIn) {
                 switchView('adminView');
             } else {
+                const emailInput = document.getElementById('inputAdminEmail');
+                const passInput = document.getElementById('inputAdminPass');
+                const infoText = document.getElementById('adminLoginInfoText');
+
+                // Jika masih menggunakan kredensial default, isi otomatis
+                if(state.settings.adminEmail === "admin@hwllawfirm.com" && state.settings.adminPass === "admin123") {
+                    emailInput.value = state.settings.adminEmail;
+                    passInput.value = state.settings.adminPass;
+                    if(infoText) infoText.innerText = "Kredensial Default terisi otomatis. Cukup klik tombol LOG IN untuk masuk.";
+                } else {
+                    // Jika kredensial sudah diganti/diubah, kosongkan agar wajib diisi manual
+                    emailInput.value = "";
+                    passInput.value = "";
+                    if(infoText) infoText.innerText = "Kredensial telah diperbarui. Silakan masukkan Gmail & Password baru Anda secara manual.";
+                }
+
                 document.getElementById('adminLoginModal').classList.add('active');
             }
         }
 
         function closeAdminLoginModal() {
             document.getElementById('adminLoginModal').classList.remove('active');
-        }
-
-        function quickBypassAdminLogin() {
-            // Default instant login
-            state.adminLoggedIn = true;
-            closeAdminLoginModal();
-            switchView('adminView');
-            alert('Login Admin Berhasil (Mode Default Admin)');
         }
 
         function handleAdminLogin(e) {
@@ -1336,7 +1380,7 @@
                 closeAdminLoginModal();
                 switchView('adminView');
             } else {
-                alert('Email atau Password Admin Salah!');
+                alert('Gmail atau Password Admin Salah!');
             }
         }
 
@@ -1362,7 +1406,6 @@
             const newEmail = document.getElementById('newAdminEmail').value;
             const newPass = document.getElementById('newAdminPass').value;
 
-            // Check if user is changing credentials
             if(newEmail || newPass) {
                 if(oldPass !== state.settings.adminPass) {
                     alert('Verifikasi Password Lama Gagal! Password lama salah.');
@@ -1377,38 +1420,51 @@
             state.settings.toleransi = parseInt(document.getElementById('settingToleransi').value) || 15;
 
             await saveDataToFirebase('settings', state.settings);
-            alert('Pengaturan Berhasil Disimpan!');
+            alert('Pengaturan & Kredensial Berhasil Disimpan!');
             closeAdminSettingsModal();
             syncDataFromFirebase();
         }
 
         // ----------------------------------------------------
-        // GPS GEOLOCATION
+        // GPS GEOLOCATION REAL-TIME PERANGKAT
         // ----------------------------------------------------
         function fetchGPSLocation() {
             const display = document.getElementById('gpsDisplay');
-            display.value = "Mendapatkan GPS...";
+            if(!display) return;
+            
+            display.value = "Mendapatkan lokasi real-time HP...";
 
             if (navigator.geolocation) {
+                const options = {
+                    enableHighAccuracy: true, // Pakai sensor GPS fisik HP
+                    timeout: 10000,
+                    maximumAge: 0             // Tanpa cache, wajib data paling baru
+                };
+
                 navigator.geolocation.getCurrentPosition(
                     (pos) => {
                         const lat = pos.coords.latitude.toFixed(6);
                         const lng = pos.coords.longitude.toFixed(6);
-                        state.currentGPS = { lat, lng, address: `Lat: ${lat}, Lng: ${lng}` };
-                        display.value = `${lat}, ${lng} (Verified GPS)`;
+                        const acc = pos.coords.accuracy ? Math.round(pos.coords.accuracy) : null;
+                        
+                        const accText = acc ? ` (Akurasi: ±${acc}m)` : '';
+                        state.currentGPS = { lat, lng, address: `Lat: ${lat}, Lng: ${lng}${accText}` };
+                        display.value = `${lat}, ${lng}${accText}`;
                     },
                     (err) => {
-                        state.currentGPS = { lat: -0.507, lng: 101.447, address: "Pekanbaru (Default)" };
-                        display.value = "-0.507, 101.447 (GPS Office Default)";
-                    }
+                        console.warn('Geolocation Error:', err);
+                        display.value = "Gagal mengambil GPS real-time. Aktifkan Lokasi HP Anda.";
+                        alert('Gagal mengambil lokasi real-time. Pastikan Akses Lokasi / GPS di HP Anda sudah diizinkan!');
+                    },
+                    options
                 );
             } else {
-                display.value = "GPS tidak didukung browser ini";
+                display.value = "GPS tidak didukung oleh browser/HP ini";
             }
         }
 
         // ----------------------------------------------------
-        // CAMERA QR SCANNER
+        // CAMERA QR SCANNER & LOCK / UNLOCK SYSTEM
         // ----------------------------------------------------
         function startCameraScan() {
             const scannerContainer = document.getElementById('interactive-scanner');
@@ -1429,9 +1485,42 @@
             });
         }
 
+        function unlockAttendanceForm() {
+            state.isBarcodeScanned = true;
+            
+            // Unlock UI Elements
+            document.getElementById('employeeSelect').disabled = false;
+            document.getElementById('agendaInput').disabled = false;
+            document.getElementById('btnRefreshGps').disabled = false;
+            document.getElementById('btnSubmitAttendance').disabled = false;
+
+            // Update Notice Badge
+            const noticeBox = document.getElementById('scanLockNotice');
+            noticeBox.className = "status-box unlocked";
+            noticeBox.innerHTML = '<i class="fa-solid fa-lock-open"></i> <span>Barcode Terverifikasi! Form Absensi & Agenda Terbuka.</span>';
+
+            // Auto fetch real-time GPS upon unlock
+            fetchGPSLocation();
+        }
+
+        function lockAttendanceForm() {
+            state.isBarcodeScanned = false;
+            
+            // Lock UI Elements
+            document.getElementById('employeeSelect').disabled = true;
+            document.getElementById('agendaInput').disabled = true;
+            document.getElementById('btnRefreshGps').disabled = true;
+            document.getElementById('btnSubmitAttendance').disabled = true;
+
+            // Update Notice Badge
+            const noticeBox = document.getElementById('scanLockNotice');
+            noticeBox.className = "status-box locked";
+            noticeBox.innerHTML = '<i class="fa-solid fa-lock"></i> <span>Scan Barcode Kantor / ID Anda terlebih dahulu untuk membuka form presensi!</span>';
+        }
+
         function scanQRCodeTick() {
             const video = document.getElementById('scanner-video');
-            if (video.readyState === video.HAVE_ENOUGH_DATA) {
+            if (video && video.readyState === video.HAVE_ENOUGH_DATA) {
                 const canvas = document.createElement("canvas");
                 canvas.width = video.videoWidth;
                 canvas.height = video.videoHeight;
@@ -1442,15 +1531,19 @@
 
                 if (code) {
                     stopCameraScan();
-                    alert("Barcode Ditemukan: " + code.data);
                     
-                    // Match barcode with employee or office QR
+                    // Match barcode with employee QR or Office Wall QR
                     if(code.data.startsWith("EMP-")) {
+                        unlockAttendanceForm();
                         const empSelect = document.getElementById('employeeSelect');
                         empSelect.value = code.data;
                         onEmployeeSelectChange();
+                        alert("Barcode ID Karyawan Berhasil Dideteksi! Form Absensi Telah Terbuka.");
                     } else if(code.data === "HWL_LAW_FIRM_OFFICE_OFFICIAL_QR_2026") {
-                        alert("Barcode Kantor Resmi Terverifikasi! Silakan lengkapi agenda & kirim presensi.");
+                        unlockAttendanceForm();
+                        alert("Barcode Kantor Resmi Terverifikasi! Form Absensi Telah Terbuka.");
+                    } else {
+                        alert("Barcode tidak dikenali! Silakan scan Barcode Resmi HWL Law Firm.");
                     }
                     return;
                 }
@@ -1469,21 +1562,35 @@
         }
 
         // ----------------------------------------------------
-        // EMPLOYEES & PROFILES
+        // EMPLOYEES & PROFILES (FIXED DROPDOWN SELECTION BUG)
         // ----------------------------------------------------
         function renderEmployeeDropdowns() {
             const select1 = document.getElementById('employeeSelect');
             const select2 = document.getElementById('leaveEmployeeSelect');
             const select3 = document.getElementById('taskEmployeeSelect');
 
+            // Simpan nilai pilihan awal
+            const val1 = select1 ? select1.value : "";
+            const val2 = select2 ? select2.value : "";
+            const val3 = select3 ? select3.value : "";
+
             let html = '<option value="">-- Pilih Karyawan --</option>';
             state.employees.forEach(emp => {
                 html += `<option value="${emp.id}">${emp.nip} - ${emp.nama}</option>`;
             });
 
-            if(select1) select1.innerHTML = html;
-            if(select2) select2.innerHTML = html;
-            if(select3) select3.innerHTML = html;
+            if(select1) {
+                select1.innerHTML = html;
+                select1.value = val1;
+            }
+            if(select2) {
+                select2.innerHTML = html;
+                select2.value = val2;
+            }
+            if(select3) {
+                select3.innerHTML = html;
+                select3.value = val3;
+            }
         }
 
         function onEmployeeSelectChange() {
@@ -1593,11 +1700,17 @@
         // ----------------------------------------------------
         async function handleAttendanceSubmit(e) {
             e.preventDefault();
+
+            if(!state.isBarcodeScanned) {
+                alert('Anda Wajib Scan Barcode terlebih dahulu sebelum mengirimkan presensi!');
+                return;
+            }
+
             const empId = document.getElementById('employeeSelect').value;
             const agenda = document.getElementById('agendaInput').value;
 
             if(!empId) {
-                alert('Pilih karyawan!');
+                alert('Pilih Karyawan!');
                 return;
             }
 
@@ -1615,7 +1728,6 @@
             const tanggalFormatted = `${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
             const hariFormatted = days[now.getDay()];
 
-            // Check shift status
             const jamMasukSplit = state.settings.jamMasuk.split(':');
             const targetMin = parseInt(jamMasukSplit[0]) * 60 + parseInt(jamMasukSplit[1]) + state.settings.toleransi;
             const currentMin = now.getHours() * 60 + now.getMinutes();
@@ -1645,9 +1757,12 @@
             alert(`PRESENSI BERHASIL!
 
 Waktu: ${hariFormatted}, ${tanggalFormatted} - ${timestampFormatted}
+Lokasi GPS: ${state.currentGPS.address}
 Status: ${statusShift}`);
+
             document.getElementById('attendanceForm').reset();
-            fetchGPSLocation();
+            onEmployeeSelectChange();
+            lockAttendanceForm();
             syncDataFromFirebase();
         }
 
@@ -1744,7 +1859,7 @@ Status: ${statusShift}`);
                 </html>
             `;
 
-            const blob = new Blob(['﻿' + tableHTML], { type: 'application/msword' });
+            const blob = new Blob(['\ufeff' + tableHTML], { type: 'application/msword' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
