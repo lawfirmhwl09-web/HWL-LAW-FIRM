@@ -1,4 +1,4 @@
-
+<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
@@ -40,7 +40,7 @@
 </head>
 <body class="bg-gray-100 text-gray-800 min-h-screen flex flex-col justify-between">
 
-    <!-- Top Bar / Header -->
+    <!-- Header / Navigasi Atas -->
     <header class="maroon-gradient text-white border-b-4 border-gold shadow-lg sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
             <div class="flex items-center space-x-3">
@@ -58,22 +58,22 @@
         </div>
     </header>
 
-    <!-- Main Container -->
+    <!-- Container Utama -->
     <main id="app" class="flex-grow max-w-7xl w-full mx-auto p-4 md:p-6">
         <!-- Konten Dinamis Dirender Oleh JavaScript -->
     </main>
 
     <!-- Footer -->
     <footer class="bg-maroon-dark text-gold py-4 text-center text-xs border-t border-gold/30">
-        <p>&copy; 2026 HWL Law Firm. All Rights Reserved. System Version 2.5 (Online Cloud Connected).</p>
+        <p>&copy; 2026 HWL Law Firm. All Rights Reserved. Real-time Multi-device Sync Enabled.</p>
     </footer>
 
-    <!-- Application Logic -->
+    <!-- Script Logika Aplikasi -->
     <script>
-        // Synchronized Database Store via LocalStorage & BroadcastChannel
+        // Broadcast Channel untuk Sinkronisasi Antar Tab/Browser Lokal
         const broadcast = new BroadcastChannel('hwl_firm_sync');
 
-        // URL GOOGLE APPS SCRIPT DATABASE CLOUD (TAHAP 2)
+        // URL GOOGLE APPS SCRIPT (DATABASE CLOUD TERPUSAT)
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyUhGqaAxIOxGA4V-u3YsA3y0dQ4ce5fB6tPVi74Bvz2vyxS7iUQLeZdS2vSuEKytQX/exec";
 
         const DEFAULT_DATA = {
@@ -109,14 +109,36 @@
             render();
         }
 
-        // Broadcast Listener untuk Sinkronisasi Antar Perangkat / Tab
+        // FUNGSI SINKRONISASI ONLINE DUA ARAH (Mendapatkan data absensi dari Cloud)
+        async function syncOnlineData() {
+            if (typeof GOOGLE_SCRIPT_URL === 'undefined' || !GOOGLE_SCRIPT_URL) return;
+
+            try {
+                const response = await fetch(GOOGLE_SCRIPT_URL);
+                const result = await response.json();
+
+                if (result.status === 'success' && Array.isArray(result.data)) {
+                    const db = getDB();
+                    // Hanya perbarui & re-render jika ada perbedaan data terbaru dari cloud
+                    if (JSON.stringify(db.attendance) !== JSON.stringify(result.data)) {
+                        db.attendance = result.data;
+                        localStorage.setItem('hwl_law_firm_db', JSON.stringify(db));
+                        render();
+                    }
+                }
+            } catch (err) {
+                console.log("Menjalankan dalam mode offline / cache lokal.");
+            }
+        }
+
+        // Broadcast Listener Sinkronisasi Lokal
         broadcast.onmessage = (event) => {
             if (event.data.type === 'DATA_UPDATED') {
                 render();
             }
         };
 
-        // Session State
+        // Session Management
         let session = JSON.parse(sessionStorage.getItem('hwl_session')) || { role: null, user: null };
 
         function setSession(role, user) {
@@ -168,13 +190,11 @@
                     </div>
 
                     <div class="p-6">
-                        <!-- Switch Mode Login -->
                         <div class="flex bg-gray-100 rounded-xl p-1 mb-6 border">
                             <button onclick="toggleLoginTab('admin')" id="tab-admin-btn" class="flex-1 py-2 text-sm font-bold rounded-lg bg-maroon text-gold shadow">Portal Admin</button>
                             <button onclick="toggleLoginTab('employee')" id="tab-emp-btn" class="flex-1 py-2 text-sm font-bold text-gray-500 hover:text-maroon">Portal Karyawan</button>
                         </div>
 
-                        <!-- Form Admin Login -->
                         <div id="form-admin-login" class="space-y-4">
                             <div>
                                 <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Gmail Admin</label>
@@ -189,7 +209,6 @@
                             </button>
                         </div>
 
-                        <!-- Form Karyawan Login -->
                         <div id="form-employee-login" class="space-y-4 hidden">
                             <div>
                                 <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Pilih Karyawan Terdaftar</label>
@@ -257,7 +276,6 @@
         function renderAdminPortal(db) {
             return `
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                    <!-- Sidebar Navigasi -->
                     <div class="bg-white rounded-xl shadow border border-gold/30 p-4 space-y-2">
                         <div class="p-3 maroon-gradient rounded-lg text-gold text-center font-bold mb-4">
                             <i class="fa-solid fa-user-gear mr-2"></i>MENU ADMIN
@@ -282,7 +300,6 @@
                         </button>
                     </div>
 
-                    <!-- Area Konten Utama -->
                     <div class="md:col-span-3">
                         ${renderAdminTabContent(db)}
                     </div>
@@ -297,8 +314,6 @@
 
         function renderAdminTabContent(db) {
             if (adminTab === 'dashboard') {
-                const today = new Date().toISOString().split('T')[0];
-                const todayAtt = db.attendance.filter(a => a.date === today);
                 return `
                     <div class="space-y-6">
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -307,8 +322,8 @@
                                 <h3 class="text-3xl font-bold text-maroon mt-1">${db.employees.length} Orang</h3>
                             </div>
                             <div class="bg-white p-5 rounded-xl shadow border-l-4 border-gold">
-                                <p class="text-xs text-gray-500 font-bold uppercase">Hadir Hari Ini</p>
-                                <h3 class="text-3xl font-bold text-gold-dark mt-1">${todayAtt.length} Orang</h3>
+                                <p class="text-xs text-gray-500 font-bold uppercase">Total Log Absen Online</p>
+                                <h3 class="text-3xl font-bold text-gold-dark mt-1">${db.attendance.length} Record</h3>
                             </div>
                             <div class="bg-white p-5 rounded-xl shadow border-l-4 border-maroon-light">
                                 <p class="text-xs text-gray-500 font-bold uppercase">Izin / Sakit</p>
@@ -316,12 +331,11 @@
                             </div>
                         </div>
 
-                        <!-- Main Office Barcode Display -->
                         <div class="bg-white rounded-xl shadow p-6 border border-gold/40">
                             <h3 class="font-bold text-lg text-maroon mb-2 flex items-center">
                                 <i class="fa-solid fa-qrcode mr-2 text-gold"></i>Barcode Utama Kantor (Untuk Di-Print & Ditempel)
                             </h3>
-                            <p class="text-xs text-gray-600 mb-4">Cetak Barcode di bawah ini dan tempelkan di dinding depan kantor HWL Law Firm. Setiap karyawan wajib melakukan scan barcode ini dari HP masing-masing.</p>
+                            <p class="text-xs text-gray-600 mb-4">Cetak Barcode di bawah ini dan tempelkan di dinding kantor HWL Law Firm.</p>
                             <div class="flex flex-col items-center bg-gray-50 p-6 rounded-xl border border-dashed border-gold">
                                 <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${db.settings.officeQR}" alt="QR Kantor HWL" class="shadow-md rounded p-2 bg-white border border-gray-300">
                                 <p class="font-mono text-sm font-bold text-maroon mt-3">${db.settings.officeQR}</p>
@@ -380,7 +394,10 @@
                 return `
                     <div class="bg-white rounded-xl shadow p-6 border border-gold/30">
                         <div class="flex justify-between items-center mb-6">
-                            <h3 class="font-bold text-lg text-maroon"><i class="fa-solid fa-clipboard-user mr-2"></i>Laporan Rekap Absensi Real-Time</h3>
+                            <div>
+                                <h3 class="font-bold text-lg text-maroon"><i class="fa-solid fa-clipboard-user mr-2"></i>Laporan Rekap Absensi Real-Time Cloud</h3>
+                                <p class="text-[11px] text-green-600 font-semibold mt-0.5"><i class="fa-solid fa-circle text-[8px] animate-pulse mr-1"></i>Terhubung langsung secara online dengan database HP Karyawan</p>
+                            </div>
                             <button onclick="exportAttendanceToWord()" class="bg-gold-dark text-white px-4 py-2 rounded-lg font-bold text-xs hover:bg-gold shadow">
                                 <i class="fa-solid fa-file-word mr-1"></i>Download Rekap (MS Word)
                             </button>
@@ -390,14 +407,14 @@
                             <table class="w-full text-left text-xs border-collapse">
                                 <thead>
                                     <tr class="bg-maroon text-gold font-bold">
-                                        <th class="p-3 border">Hari & Waktu (Detik/Menit/Jam)</th>
+                                        <th class="p-3 border">Hari & Waktu Absen</th>
                                         <th class="p-3 border">Nama Karyawan</th>
                                         <th class="p-3 border">Agenda Kegiatan Hari Ini</th>
                                         <th class="p-3 border">Lokasi GPS</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    ${db.attendance.length === 0 ? `<tr><td colspan="4" class="p-4 text-center text-gray-500">Belum ada catatan absensi.</td></tr>` : 
+                                    ${db.attendance.length === 0 ? `<tr><td colspan="4" class="p-4 text-center text-gray-500">Belum ada catatan absensi terdeteksi.</td></tr>` : 
                                         db.attendance.map(a => `
                                             <tr class="hover:bg-gray-50 border-b">
                                                 <td class="p-3 font-mono font-bold text-maroon">${a.timestamp}</td>
@@ -417,7 +434,7 @@
                 return `
                     <div class="bg-white rounded-xl shadow p-6 border border-gold/30">
                         <div class="flex justify-between items-center mb-6">
-                            <h3 class="font-bold text-lg text-maroon"><i class="fa-solid fa-list-check mr-2"></i>Tugas & Deadline Pekerjaan Hari Ini</h3>
+                            <h3 class="font-bold text-lg text-maroon"><i class="fa-solid fa-list-check mr-2"></i>Tugas & Deadline Pekerjaan</h3>
                             <button onclick="openModalAddTask()" class="bg-maroon text-gold px-4 py-2 rounded-lg font-bold text-xs hover:bg-maroon-dark shadow">
                                 <i class="fa-solid fa-plus mr-1"></i>Buat Tugas Baru
                             </button>
@@ -481,7 +498,6 @@
             if (adminTab === 'settings') {
                 return `
                     <div class="space-y-6">
-                        <!-- Setting Jam Kerja -->
                         <div class="bg-white rounded-xl shadow p-6 border border-gold/30">
                             <h3 class="font-bold text-lg text-maroon mb-4"><i class="fa-solid fa-clock mr-2"></i>Pengaturan Jadwal Kerja Kantor</h3>
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -503,10 +519,9 @@
                             </button>
                         </div>
 
-                        <!-- Ganti Akun Admin -->
                         <div class="bg-white rounded-xl shadow p-6 border border-gold/30">
                             <h3 class="font-bold text-lg text-maroon mb-2"><i class="fa-solid fa-key mr-2"></i>Ganti Akun Admin / Owner</h3>
-                            <p class="text-xs text-gray-500 mb-4">Untuk mengganti akun admin, Anda wajib memasukkan verifikasi Gmail & Password admin saat ini terlebih dahulu.</p>
+                            <p class="text-xs text-gray-500 mb-4">Verifikasi akun lama untuk mengubah password Admin.</p>
 
                             <div class="space-y-3 max-w-md">
                                 <div class="p-3 bg-gold/10 border border-gold/30 rounded-lg space-y-2">
@@ -529,14 +544,13 @@
             }
         }
 
-        // Action Handlers Admin
         function saveScheduleSettings() {
             const db = getDB();
             db.settings.workStart = document.getElementById('set-start').value;
             db.settings.workEnd = document.getElementById('set-end').value;
             db.settings.workDays = document.getElementById('set-days').value;
             saveDB(db);
-            alert('Jadwal kerja berhasil diperbarui secara otomatis!');
+            alert('Jadwal kerja berhasil diperbarui!');
         }
 
         function processUpdateAdminCreds() {
@@ -631,7 +645,6 @@
             const emp = session.user;
             return `
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                    <!-- Profile Card & Nav -->
                     <div class="bg-white rounded-xl shadow border border-gold/30 p-4 space-y-4 text-center">
                         <div class="w-24 h-24 mx-auto rounded-full bg-gold/20 border-2 border-gold flex items-center justify-center overflow-hidden">
                             ${emp.photo ? `<img src="${emp.photo}" class="w-full h-full object-cover">` : `<i class="fa-solid fa-user-tie text-maroon text-4xl"></i>`}
@@ -657,7 +670,6 @@
                         </div>
                     </div>
 
-                    <!-- Area Konten Karyawan -->
                     <div class="md:col-span-3">
                         ${renderEmpTabContent(db)}
                     </div>
@@ -696,10 +708,9 @@
                 return `
                     <div class="bg-white rounded-xl shadow p-6 border border-gold/30">
                         <h3 class="font-bold text-lg text-maroon mb-2"><i class="fa-solid fa-qrcode mr-2 text-gold"></i>Pengambilan Absen via Barcode Kamera</h3>
-                        <p class="text-xs text-gray-500 mb-4">Arahkan kamera HP Anda ke Barcode Kantor HWL Law Firm yang ditempel di dinding.</p>
+                        <p class="text-xs text-gray-500 mb-4">Arahkan kamera HP Anda ke Barcode Kantor HWL Law Firm.</p>
 
                         <div class="space-y-4">
-                            <!-- Live Camera Scanner Box -->
                             <div class="bg-black/90 rounded-xl p-3 flex flex-col items-center justify-center min-h-[220px]">
                                 <div id="reader" class="w-full max-w-sm rounded overflow-hidden"></div>
                                 <button onclick="startCameraScanner()" id="start-cam-btn" class="bg-gold text-maroon-dark font-bold text-xs px-4 py-2 rounded shadow mt-2">
@@ -793,7 +804,6 @@
             }
         }
 
-        // Action Handlers Karyawan
         let html5QrcodeScanner = null;
 
         function startCameraScanner() {
@@ -810,7 +820,7 @@
                 },
                 () => {}
             ).catch(err => {
-                alert('Tidak dapat mengakses kamera HP. Silakan izinkan akses kamera pada browser Anda.');
+                alert('Tidak dapat mengakses kamera. Pastikan browser diizinkan mengakses kamera.');
             });
         }
 
@@ -819,6 +829,7 @@
             processAttendanceRecord(db.settings.officeQR);
         }
 
+        // FUNGSI UNTUK PROSES ABSEN (Pengiriman Real-Time ke Google Sheets)
         function processAttendanceRecord(scannedQR) {
             const db = getDB();
             const agenda = document.getElementById('emp-agenda-input')?.value;
@@ -846,11 +857,11 @@
                 location: gpsLocationString
             };
 
-            // 1. Simpan di internal HP (sebagai backup)
+            // 1. Simpan backup di perangkat lokal HP
             db.attendance.unshift(payload);
             saveDB(db);
 
-            // 2. Kirim data secara online ke Google Sheets Admin
+            // 2. Kirim data secara online ke Cloud Google Sheets
             if (typeof GOOGLE_SCRIPT_URL !== 'undefined' && GOOGLE_SCRIPT_URL !== "") {
                 fetch(GOOGLE_SCRIPT_URL, {
                     method: 'POST',
@@ -859,7 +870,8 @@
                     body: JSON.stringify(payload)
                 })
                 .then(() => {
-                    alert(`Absen Berhasil Dicatat & Terkirim ke Admin!\n\nWaktu: ${timestampStr}\nKaryawan: ${session.user.name}`);
+                    alert(`Absen Berhasil Dicatat & Terkirim Online!\n\nWaktu: ${timestampStr}\nKaryawan: ${session.user.name}`);
+                    syncOnlineData();
                 })
                 .catch(err => {
                     alert(`Absen tersimpan lokal, namun gagal terkirim online. Cek koneksi internet.`);
@@ -921,7 +933,6 @@
             }
         }
 
-        // Modals Admin
         function openModalAddEmp() {
             const name = prompt("Nama Lengkap & Gelar Karyawan:");
             if (!name) return;
@@ -932,7 +943,7 @@
             const id = `HWL-00${db.employees.length + 1}`;
             db.employees.push({ id, name, email: email || '-', phone: phone || '-', photo: '', barcode: id });
             saveDB(db);
-            alert(`Karyawan berhasil ditambahkan dengan ID & Barcode: ${id}`);
+            alert(`Karyawan berhasil ditambahkan dengan ID: ${id}`);
         }
 
         function openModalAddTask() {
@@ -946,8 +957,14 @@
             alert("Tugas baru berhasil ditambahkan!");
         }
 
-        // Inisialisasi Aplikasi Saat Halaman Dimuat
+        // INISIALISASI SISTEM & PENARIKAN DATA OTOMATIS
         render();
+        syncOnlineData(); // Tarik data saat aplikasi pertama dibuka
+
+        // Penarikan data otomatis setiap 10 detik sekali
+        setInterval(() => {
+            syncOnlineData();
+        }, 10000);
     </script>
 </body>
 </html>
