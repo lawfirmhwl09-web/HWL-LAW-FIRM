@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
@@ -671,10 +670,9 @@
                             <p id="employeeProfileRole" style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">-</p>
                             
                             <div style="margin-top: 1rem;">
-                                <label class="btn btn-outline btn-sm" style="color: var(--maroon-dark); border-color: var(--maroon-dark); cursor: pointer;">
-                                    <i class="fa-solid fa-upload"></i> Unggah / Ubah Foto Profil
-                                    <input type="file" id="profilePicInput" accept="image/*" style="display: none;" onchange="handleProfilePhotoUpload(event)">
-                                </label>
+                                <button type="button" class="btn btn-outline btn-sm" onclick="openChangePhotoModal()" style="color: var(--maroon-dark); border-color: var(--maroon-dark);">
+                                    <i class="fa-solid fa-image"></i> Ganti Foto Profil dari Galeri
+                                </button>
                             </div>
 
                             <div style="margin-top: 1.5rem; display: inline-block;">
@@ -1023,6 +1021,43 @@
 
     </div>
 
+    <!-- MODAL: GANTI FOTO PROFIL DENGAN KONFIRMASI NIP / ID -->
+    <div class="modal" id="changePhotoModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div><i class="fa-solid fa-user-pen"></i> Konfirmasi Identitas & Ganti Foto Profil</div>
+                <button class="close-btn" onclick="closeChangePhotoModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div style="background: #FAF4E8; border-left: 4px solid var(--gold-primary); padding: 0.8rem; font-size: 0.82rem; margin-bottom: 1.2rem; color: var(--maroon-dark);">
+                    <strong>Keamanan Akun:</strong><br>Masukkan NIP/ID Karyawan dan Nama sesuai data Anda untuk mengunggah foto dari galeri.
+                </div>
+                <form id="changePhotoForm" onsubmit="handleConfirmAndChangePhoto(event)">
+                    <div class="form-group">
+                        <label class="form-label">Pilih Karyawan</label>
+                        <select class="form-control" id="modalPhotoEmpSelect" required>
+                            <option value="">-- Pilih Nama Karyawan --</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Konfirmasi NIP / ID Karyawan</label>
+                        <input type="text" class="form-control" id="modalPhotoNip" placeholder="Contoh: HWL-2026-001 atau EMP-01" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Pilih Foto dari Galeri Perangkat</label>
+                        <input type="file" class="form-control" id="modalPhotoFile" accept="image/*" required onchange="previewSelectedGalleryPhoto(event)">
+                        <img id="modalPhotoPreview" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; display: none; margin: 1rem auto 0 auto; border: 3px solid var(--gold-primary);">
+                    </div>
+                    <div style="margin-top: 1.5rem;">
+                        <button type="submit" class="btn btn-gold" style="width: 100%; padding: 0.85rem; font-size: 1rem;">
+                            <i class="fa-solid fa-upload"></i> Verifikasi & Simpan Foto Profil
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <!-- MODAL: LOGIN ADMIN -->
     <div class="modal" id="adminLoginModal">
         <div class="modal-content">
@@ -1144,6 +1179,7 @@
         };
 
         let deferredPrompt;
+        let tempGalleryPhotoBase64 = "";
 
         // Register Service Worker for PWA (Installable App)
         if ('serviceWorker' in navigator) {
@@ -1183,7 +1219,6 @@
             initOfficeWallQR();
             syncDataFromFirebase();
             
-            // Set default address to new location immediately
             const display = document.getElementById('gpsDisplay');
             if(display) display.value = state.currentGPS.address;
 
@@ -1398,7 +1433,6 @@
             syncDataFromFirebase();
         }
 
-        // GEOLOCATION & REAL-TIME LOCATION LOCK CONFIGURATION
         function fetchGPSLocation(showAlerts = true) {
             const display = document.getElementById('gpsDisplay');
             if(display && showAlerts) display.value = "Memperbarui lokasi real-time...";
@@ -1417,7 +1451,6 @@
                         const acc = pos.coords.accuracy ? Math.round(pos.coords.accuracy) : null;
                         const accText = acc ? ` (±${acc}m)` : '';
                         
-                        // Set fixed real-time location address as requested
                         const fixedAddress = `Jl. Perumahan Banuaran Indah No.09 Blok Q, RT.001/RW.012, Banuaran Nan XX, Kec. Lubuk Begalung, Kota Padang, Sumatera Barat 25222 [Lat: ${lat}, Lng: ${lng}${accText}]`;
                         state.currentGPS = { lat, lng, address: fixedAddress };
                         if(display) display.value = fixedAddress;
@@ -1530,10 +1563,12 @@
             const select1 = document.getElementById('employeeSelect');
             const select2 = document.getElementById('leaveEmployeeSelect');
             const select3 = document.getElementById('taskEmployeeSelect');
+            const select4 = document.getElementById('modalPhotoEmpSelect');
 
             const val1 = select1 ? select1.value : "";
             const val2 = select2 ? select2.value : "";
             const val3 = select3 ? select3.value : "";
+            const val4 = select4 ? select4.value : "";
 
             let html = '<option value="">-- Pilih Karyawan --</option>';
             state.employees.forEach(emp => {
@@ -1543,6 +1578,7 @@
             if(select1) { select1.innerHTML = html; select1.value = val1; }
             if(select2) { select2.innerHTML = html; select2.value = val2; }
             if(select3) { select3.innerHTML = html; select3.value = val3; }
+            if(select4) { select4.innerHTML = html; select4.value = val4; }
         }
 
         function onEmployeeSelectChange() {
@@ -1573,27 +1609,68 @@
             }
         }
 
-        function handleProfilePhotoUpload(e) {
-            const empId = document.getElementById('employeeSelect').value;
-            if(!empId) {
-                alert('Pilih karyawan terlebih dahulu sebelum mengunggah foto!');
-                return;
-            }
+        // FUNGSI GANTI FOTO PROFIL DARI GALERI DENGAN KONFIRMASI NIP / ID
+        function openChangePhotoModal() {
+            tempGalleryPhotoBase64 = "";
+            document.getElementById('changePhotoForm').reset();
+            document.getElementById('modalPhotoPreview').style.display = 'none';
+            document.getElementById('changePhotoModal').classList.add('active');
+        }
 
+        function closeChangePhotoModal() {
+            document.getElementById('changePhotoModal').classList.remove('active');
+        }
+
+        function previewSelectedGalleryPhoto(e) {
             const file = e.target.files[0];
             if(file) {
                 const reader = new FileReader();
-                reader.onload = async function(evt) {
-                    const base64Img = evt.target.result;
-                    const empIdx = state.employees.findIndex(e => e.id === empId);
-                    if(empIdx !== -1) {
-                        state.employees[empIdx].foto = base64Img;
-                        await saveDataToFirebase('karyawan', state.employees);
-                        document.getElementById('employeeProfilePic').src = base64Img;
-                        alert('Foto Profil Berhasil Diperbarui!');
-                    }
+                reader.onload = function(evt) {
+                    tempGalleryPhotoBase64 = evt.target.result;
+                    const preview = document.getElementById('modalPhotoPreview');
+                    preview.src = tempGalleryPhotoBase64;
+                    preview.style.display = 'block';
                 };
                 reader.readAsDataURL(file);
+            }
+        }
+
+        async function handleConfirmAndChangePhoto(e) {
+            e.preventDefault();
+            const empId = document.getElementById('modalPhotoEmpSelect').value;
+            const inputNip = document.getElementById('modalPhotoNip').value.trim();
+
+            const emp = state.employees.find(e => e.id === empId);
+            if(!emp) {
+                alert('Pilih karyawan terlebih dahulu!');
+                return;
+            }
+
+            // Validasi kecocokan NIP atau ID Karyawan
+            if(inputNip !== emp.nip && inputNip !== emp.id) {
+                alert('Konfirmasi Gagal! NIP atau ID Karyawan yang Anda masukkan tidak cocok dengan data karyawan yang dipilih.');
+                return;
+            }
+
+            if(!tempGalleryPhotoBase64) {
+                alert('Silakan pilih foto dari galeri terlebih dahulu!');
+                return;
+            }
+
+            const empIdx = state.employees.findIndex(e => e.id === empId);
+            if(empIdx !== -1) {
+                state.employees[empIdx].foto = tempGalleryPhotoBase64;
+                await saveDataToFirebase('karyawan', state.employees);
+                
+                alert(`Verifikasi Berhasil!\nFoto Profil untuk ${emp.nama} (${emp.nip}) berhasil diperbarui.`);
+                closeChangePhotoModal();
+                syncDataFromFirebase();
+
+                // Sinkronkan tampilan jika sedang dipilih di portal utama
+                const mainSelect = document.getElementById('employeeSelect');
+                if(mainSelect && mainSelect.value === empId) {
+                    onEmployeeSelectChange();
+                }
             }
         }
 
@@ -1980,12 +2057,12 @@
             }
         }
 
-        updateStatsCount = function() {
+        function updateStatsCount() {
             document.getElementById('statTotalEmployees').innerText = state.employees.length;
             document.getElementById('statHadirToday').innerText = state.attendance.length;
             document.getElementById('statIzinToday').innerText = state.leaves.length;
             document.getElementById('statPendingTasks').innerText = state.tasks.filter(t => t.status === 'Pending').length;
-        };
+        }
     </script>
 </body>
 </html>
