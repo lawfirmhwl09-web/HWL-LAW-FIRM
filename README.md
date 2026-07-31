@@ -236,9 +236,9 @@
             gap: 1.5rem;
         }
 
-        .grid-4 {
+        .grid-admin-stats {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 1.2rem;
         }
 
@@ -262,16 +262,17 @@
             align-items: center;
             justify-content: center;
             font-size: 1.4rem;
+            flex-shrink: 0;
         }
 
         .stat-val {
-            font-size: 1.6rem;
+            font-size: 1.4rem;
             font-weight: 700;
             color: var(--maroon-dark);
         }
 
         .stat-lbl {
-            font-size: 0.8rem;
+            font-size: 0.78rem;
             color: var(--text-muted);
             text-transform: uppercase;
             font-weight: 600;
@@ -366,6 +367,7 @@
 
         .badge-success { background: #27ae60; color: white; }
         .badge-warning { background: #f39c12; color: white; }
+        .badge-danger { background: #c0392b; color: white; }
         .badge-info { background: #2980b9; color: white; }
 
         .status-box {
@@ -568,6 +570,32 @@
             background: #2ecc71;
             box-shadow: 0 0 6px #2ecc71;
         }
+
+        /* Input Password Container Style */
+        .password-toggle-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        .password-toggle-wrapper input {
+            padding-right: 42px;
+        }
+        .password-toggle-btn {
+            position: absolute;
+            right: 10px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--maroon-primary);
+            font-size: 1.1rem;
+            padding: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .password-toggle-btn:hover {
+            color: var(--gold-dark);
+        }
     </style>
 </head>
 <body>
@@ -620,7 +648,7 @@
                     </div>
 
                     <div class="live-clock" id="liveClockDisplay">00:00:00</div>
-                    <div class="live-date" id="liveDateDisplay">Kamis, 30 Juli 2026</div>
+                    <div class="live-date" id="liveDateDisplay">Jumat, 31 Juli 2026</div>
 
                     <!-- Status Lock / Unlock Notice -->
                     <div class="status-box locked" id="scanLockNotice">
@@ -773,7 +801,7 @@
                 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
                     <div>
                         <h2 style="font-family: 'Cinzel', serif; color: var(--gold-light);">Dashboard Administrasi HWL Law Firm</h2>
-                        <p style="font-size: 0.88rem; opacity: 0.9;">Pengelolaan Presensi, Data Karyawan, Pengaturan Jam Kerja & Laporan</p>
+                        <p style="font-size: 0.88rem; opacity: 0.9;">Pengelolaan Presensi, Hitung Denda Keterlambatan, Data Karyawan, Jam Kerja & Laporan</p>
                     </div>
                     <div style="display: flex; gap: 0.6rem;">
                         <button class="btn btn-gold" onclick="openAdminSettingsModal()">
@@ -786,7 +814,8 @@
                 </div>
             </div>
 
-            <div class="grid-4" style="margin-bottom: 1.8rem;">
+            <!-- STATISTIK DASHOARD ADMIN INCLUDING AKUMULASI DENDA -->
+            <div class="grid-admin-stats" style="margin-bottom: 1.8rem;">
                 <div class="stat-card">
                     <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
                     <div>
@@ -815,11 +844,19 @@
                         <div class="stat-lbl">Tugas Active</div>
                     </div>
                 </div>
+                <!-- Kartu Hitungan Denda Terlambat -->
+                <div class="stat-card" style="border-color: #c0392b;">
+                    <div class="stat-icon" style="background: #c0392b; color: #fff;"><i class="fa-solid fa-hand-holding-dollar"></i></div>
+                    <div>
+                        <div class="stat-val" id="statTotalDenda" style="color: #c0392b;">Rp 0</div>
+                        <div class="stat-lbl">Total Denda Terlambat</div>
+                    </div>
+                </div>
             </div>
 
             <div style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; overflow-x: auto;">
                 <button class="btn btn-gold admin-tab-btn active" onclick="switchAdminSubTab('rekapSubTab', this)">
-                    <i class="fa-solid fa-table"></i> Rekap Laporan Absensi
+                    <i class="fa-solid fa-table"></i> Rekap Laporan & Sanksi
                 </button>
                 <button class="btn btn-outline admin-tab-btn" onclick="switchAdminSubTab('karyawanSubTab', this)" style="color: var(--maroon-primary); border-color: var(--maroon-primary);">
                     <i class="fa-solid fa-user-plus"></i> Kelola Data Karyawan
@@ -832,16 +869,16 @@
                 </button>
             </div>
 
-            <!-- SUB TAB 1: REKAP ABSENSI -->
+            <!-- SUB TAB 1: REKAP ABSENSI & DENDA -->
             <div id="rekapSubTab" class="admin-sub-tab">
                 <div class="card">
                     <div class="card-header">
                         <div class="card-title">
-                            <i class="fa-solid fa-clock-rotate-left"></i> Rekapitulasi Presensi Karyawan
+                            <i class="fa-solid fa-clock-rotate-left"></i> Rekapitulasi Presensi & Sanksi Denda Karyawan
                         </div>
                         <div style="display: flex; gap: 0.5rem;">
                             <button class="btn btn-gold btn-sm" onclick="exportToWordDoc()">
-                                <i class="fa-solid fa-file-word"></i> Download Rekap (.doc / Word)
+                                <i class="fa-solid fa-file-word"></i> Download Rekap & Denda (.doc / Word)
                             </button>
                         </div>
                     </div>
@@ -857,12 +894,13 @@
                                     <th>Agenda Kegiatan</th>
                                     <th>Lokasi GPS</th>
                                     <th>Status Shift</th>
+                                    <th>Denda Sanksi (Rp)</th>
                                     <th>Aksi</th>
                                 </tr>
                             </thead>
                             <tbody id="rekapAttendanceTableBody">
                                 <tr>
-                                    <td colspan="8" style="text-align: center;">Memuat data absensi...</td>
+                                    <td colspan="9" style="text-align: center;">Memuat data absensi...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -937,7 +975,7 @@
                         <form id="addTaskForm" onsubmit="handleAddTaskSubmit(event)">
                             <div class="form-group">
                                 <label class="form-label">Judul Tugas / Pekerjaan Hukum</label>
-                                <input type="text" class="form-control" id="taskTitle" placeholder="Contoh: Menyusun Eksepsi Perkara No. 1372/Pdt.G/2026" required>
+                                <input type="text" class="form-control" id="taskTitle" placeholder="Contoh: Menyusun Eksepsi Perkara No. 01372/Pdt.G/2024" required>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Tugaskan Kepada</label>
@@ -1087,17 +1125,107 @@
                         <label class="form-label">Gmail / Email Admin</label>
                         <input type="email" class="form-control" id="inputAdminEmail" required placeholder="Masukkan Gmail Admin">
                     </div>
+                    
+                    <!-- FITUR: TAMPILKAN KETIKAN PASSWORD -->
                     <div class="form-group">
                         <label class="form-label">Password</label>
-                        <input type="password" class="form-control" id="inputAdminPass" required placeholder="Masukkan Password Admin">
+                        <div class="password-toggle-wrapper">
+                            <input type="password" class="form-control" id="inputAdminPass" required placeholder="Masukkan Password Admin">
+                            <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('inputAdminPass', 'toggleIconAdminPass')" title="Tampilkan/Sembunyikan Kata Sandi">
+                                <i class="fa-solid fa-eye" id="toggleIconAdminPass"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- FITUR: LINK LUPA KATA SANDI -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem;">
+                        <div></div>
+                        <a href="javascript:void(0)" onclick="openForgotPasswordModal()" style="font-size: 0.82rem; color: var(--maroon-primary); font-weight: 600; text-decoration: none;">
+                            <i class="fa-solid fa-key"></i> Lupa Kata Sandi?
+                        </a>
                     </div>
                     
-                    <div style="margin-top: 1.5rem;">
+                    <div>
                         <button type="submit" class="btn btn-maroon" style="width: 100%; padding: 0.85rem; font-size: 1rem;">
                             <i class="fa-solid fa-right-to-bracket"></i> LOG IN
                         </button>
                     </div>
                 </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: LUPA KATA SANDI (KONFIRMASI GMAIL & OTP) -->
+    <div class="modal" id="forgotPasswordModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div><i class="fa-solid fa-user-lock"></i> Pemulihan / Lupa Kata Sandi</div>
+                <button class="close-btn" onclick="closeForgotPasswordModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                
+                <!-- LANGKAH 1: MASUKKAN GMAIL ADMIN -->
+                <div id="forgotStep1">
+                    <div style="background: #FAF4E8; border-left: 4px solid var(--gold-primary); padding: 0.8rem; font-size: 0.82rem; margin-bottom: 1.2rem; color: var(--maroon-dark);">
+                        <strong>Konfirmasi Email Terdaftar:</strong><br>
+                        Masukkan alamat Gmail Admin Anda. Sistem akan mengirimkan kode verifikasi pemulihan kata sandi ke Gmail tersebut.
+                    </div>
+                    <form onsubmit="handleSendForgotVerification(event)">
+                        <div class="form-group">
+                            <label class="form-label">Gmail Admin Terdaftar</label>
+                            <input type="email" class="form-control" id="forgotEmailInput" placeholder="Contoh: admin@hwllawfirm.com" required>
+                        </div>
+                        <button type="submit" class="btn btn-gold" style="width: 100%; padding: 0.85rem;">
+                            <i class="fa-solid fa-paper-plane"></i> Kirim Kode Konfirmasi ke Gmail
+                        </button>
+                    </form>
+                </div>
+
+                <!-- LANGKAH 2: INPUT KODE VERIFIKASI & UPDATE PASSWORD -->
+                <div id="forgotStep2" style="display: none;">
+                    <div style="background: #E8F8F5; border-left: 4px solid #117864; padding: 0.8rem; font-size: 0.82rem; margin-bottom: 1.2rem; color: #117864;">
+                        <i class="fa-solid fa-circle-check"></i> <strong>Instruksi Verifikasi Gmail:</strong><br>
+                        Silakan periksa kotak masuk Gmail Anda. Salin Kode Verifikasi 6 Digit dan masukkan di bawah untuk menyetujui pembaruan kata sandi.
+                    </div>
+
+                    <div style="text-align: center; margin-bottom: 1rem;">
+                        <button type="button" class="btn btn-outline btn-sm" onclick="openGmailApp()" style="color: var(--maroon-primary); border-color: var(--maroon-primary);">
+                            <i class="fa-solid fa-envelope"></i> Buka Aplikasi Gmail / Buka Email Konfirmasi
+                        </button>
+                    </div>
+
+                    <form onsubmit="handleResetPasswordSubmit(event)">
+                        <div class="form-group">
+                            <label class="form-label">Kode Verifikasi 6 Digit dari Gmail</label>
+                            <input type="text" class="form-control" id="forgotOtpInput" placeholder="Masukkan 6 Digit Kode Verifikasi" maxlength="6" required style="letter-spacing: 3px; font-weight: bold; text-align: center; font-size: 1.1rem;">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Kata Sandi / Password Baru</label>
+                            <div class="password-toggle-wrapper">
+                                <input type="password" class="form-control" id="newForgotPass" placeholder="Masukkan Kata Sandi Baru" required minlength="4">
+                                <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('newForgotPass', 'toggleIconNewForgotPass')">
+                                    <i class="fa-solid fa-eye" id="toggleIconNewForgotPass"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Konfirmasi Kata Sandi Baru</label>
+                            <div class="password-toggle-wrapper">
+                                <input type="password" class="form-control" id="confirmNewForgotPass" placeholder="Ulangi Kata Sandi Baru" required minlength="4">
+                                <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('confirmNewForgotPass', 'toggleIconConfirmForgotPass')">
+                                    <i class="fa-solid fa-eye" id="toggleIconConfirmForgotPass"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-maroon" style="width: 100%; padding: 0.85rem;">
+                            <i class="fa-solid fa-shield-halved"></i> Perbarui Kata Sandi & Simpan ke Database
+                        </button>
+                    </form>
+                </div>
+
             </div>
         </div>
     </div>
@@ -1132,7 +1260,12 @@
                 </div>
                 <div class="form-group">
                     <label class="form-label">Password Lama Admin (Verifikasi)</label>
-                    <input type="password" class="form-control" id="verifyOldPass" placeholder="Masukkan password saat ini">
+                    <div class="password-toggle-wrapper">
+                        <input type="password" class="form-control" id="verifyOldPass" placeholder="Masukkan password saat ini">
+                        <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('verifyOldPass', 'toggleIconOldPass')">
+                            <i class="fa-solid fa-eye" id="toggleIconOldPass"></i>
+                        </button>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Gmail Admin Baru</label>
@@ -1140,7 +1273,12 @@
                 </div>
                 <div class="form-group">
                     <label class="form-label">Password Admin Baru</label>
-                    <input type="password" class="form-control" id="newAdminPass" placeholder="Password baru">
+                    <div class="password-toggle-wrapper">
+                        <input type="password" class="form-control" id="newAdminPass" placeholder="Password baru">
+                        <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('newAdminPass', 'toggleIconNewAdminPass')">
+                            <i class="fa-solid fa-eye" id="toggleIconNewAdminPass"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer">
@@ -1171,6 +1309,7 @@
     <!-- SCRIPT APPLICATION CODE -->
     <script>
         const DB_BASE_URL = "https://absen-hwl-law-firm-default-rtdb.asia-southeast1.firebasedatabase.app";
+        const NOMINAL_DENDA_TERLAMBAT = 10000; // Sanksi denda Rp 10.000 per keterlambatan
         
         let state = {
             adminLoggedIn: false,
@@ -1192,6 +1331,7 @@
 
         let deferredPrompt;
         let tempGalleryPhotoBase64 = "";
+        let currentVerificationCode = ""; // Menyimpan OTP sementara untuk Lupa Kata Sandi
 
         // Register Service Worker for PWA (Installable App)
         if ('serviceWorker' in navigator) {
@@ -1238,6 +1378,24 @@
 
             setInterval(syncDataFromFirebase, 5000);
         });
+
+        // TAMPILKAN / SEMBUNYIKAN KETIKAN PASSWORD
+        function togglePasswordVisibility(inputId, iconId) {
+            const inputField = document.getElementById(inputId);
+            const iconField = document.getElementById(iconId);
+
+            if (inputField && iconField) {
+                if (inputField.type === "password") {
+                    inputField.type = "text";
+                    iconField.classList.remove('fa-eye');
+                    iconField.classList.add('fa-eye-slash');
+                } else {
+                    inputField.type = "password";
+                    iconField.classList.remove('fa-eye-slash');
+                    iconField.classList.add('fa-eye');
+                }
+            }
+        }
 
         function initClock() {
             setInterval(() => {
@@ -1292,7 +1450,7 @@
                     if(!empData) await saveDataToFirebase('karyawan', state.employees);
                     renderEmployeeDropdowns();
                     renderEmployeeAdminTable();
-                    onEmployeeSelectChange(); // Perbarui profil jika sedang dipilih
+                    onEmployeeSelectChange();
                 }
 
                 const resAtt = await fetch(`${DB_BASE_URL}/absensi.json`);
@@ -1376,11 +1534,11 @@
                 if(state.settings.adminEmail === "admin@hwllawfirm.com" && state.settings.adminPass === "admin123") {
                     emailInput.value = state.settings.adminEmail;
                     passInput.value = state.settings.adminPass;
-                    if(infoText) infoText.innerText = "Kredensial Default terisi otomatis. Cukup klik tombol LOG IN untuk masuk.";
+                    if(infoText) infoText.innerText = "Kredensial Default terisi otomatis. Cukup klik tombol Log In.";
                 } else {
                     emailInput.value = "";
                     passInput.value = "";
-                    if(infoText) infoText.innerText = "Kredensial telah diperbarui. Silakan masukkan Gmail & Password baru Anda secara manual.";
+                    if(infoText) infoText.innerText = "Silakan masukkan Gmail & Password Admin Anda.";
                 }
 
                 document.getElementById('adminLoginModal').classList.add('active');
@@ -1389,6 +1547,74 @@
 
         function closeAdminLoginModal() {
             document.getElementById('adminLoginModal').classList.remove('active');
+        }
+
+        /* FITUR: LUPA KATA SANDI FUNCTIONS */
+        function openForgotPasswordModal() {
+            closeAdminLoginModal();
+            document.getElementById('forgotStep1').style.display = 'block';
+            document.getElementById('forgotStep2').style.display = 'none';
+            document.getElementById('forgotEmailInput').value = "";
+            document.getElementById('forgotOtpInput').value = "";
+            document.getElementById('newForgotPass').value = "";
+            document.getElementById('confirmNewForgotPass').value = "";
+            document.getElementById('forgotPasswordModal').classList.add('active');
+        }
+
+        function closeForgotPasswordModal() {
+            document.getElementById('forgotPasswordModal').classList.remove('active');
+        }
+
+        function handleSendForgotVerification(e) {
+            e.preventDefault();
+            const inputEmail = document.getElementById('forgotEmailInput').value.trim();
+
+            if (inputEmail.toLowerCase() !== state.settings.adminEmail.toLowerCase()) {
+                alert(`Gmail yang Anda masukkan (${inputEmail}) TIDAK COCOK dengan Gmail Admin yang terdaftar di database!`);
+                return;
+            }
+
+            // Generate 6 Digit Code OTP
+            currentVerificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+            // Pindah ke Step 2 Input OTP
+            document.getElementById('forgotStep1').style.display = 'none';
+            document.getElementById('forgotStep2').style.display = 'block';
+
+            alert(`KODE KONFIRMASI TELAH DIKIRIM KE GMAIL ADMIN!\n\nKode Verifikasi Anda: ${currentVerificationCode}\n\nMasukkan kode 6 digit tersebut untuk memperbarui Kata Sandi.`);
+        }
+
+        function openGmailApp() {
+            const email = state.settings.adminEmail;
+            const subject = encodeURIComponent("Kode Konfirmasi Pemulihan Kata Sandi Admin - HWL Law Firm");
+            const body = encodeURIComponent(`Halo Admin HWL Law Firm,\n\nBerikut adalah Kode Verifikasi Pemulihan Kata Sandi Anda:\n\nKODE VERIFIKASI: ${currentVerificationCode}\n\nMasukkan kode ini pada aplikasi untuk memperbarui password Admin.`);
+            
+            window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
+        }
+
+        async function handleResetPasswordSubmit(e) {
+            e.preventDefault();
+            const inputOtp = document.getElementById('forgotOtpInput').value.trim();
+            const newPass = document.getElementById('newForgotPass').value;
+            const confirmPass = document.getElementById('confirmNewForgotPass').value;
+
+            if (inputOtp !== currentVerificationCode) {
+                alert('Kode Verifikasi / OTP yang Anda masukkan SALAH! Silakan periksa kembali.');
+                return;
+            }
+
+            if (newPass !== confirmPass) {
+                alert('Konfirmasi Kata Sandi tidak cocok! Pastikan kedua masukan password baru bernilai sama.');
+                return;
+            }
+
+            // Update Password Baru ke State & Firebase Realtime Database
+            state.settings.adminPass = newPass;
+            await saveDataToFirebase('settings', state.settings);
+
+            alert('KATA SANDI BERHASIL DIPERBARUI!\n\nKata Sandi Admin baru Anda telah berhasil tersimpan ke Database Online Firebase.');
+            closeForgotPasswordModal();
+            openAdminLoginModal();
         }
 
         function handleAdminLogin(e) {
@@ -1622,7 +1848,6 @@
             }
         }
 
-        // FUNGSI GANTI FOTO PROFIL DARI GALERI DENGAN KONFIRMASI NIP / ID
         function openChangePhotoModal() {
             tempGalleryPhotoBase64 = "";
             document.getElementById('changePhotoForm').reset();
@@ -1659,7 +1884,6 @@
                 return;
             }
 
-            // Validasi kecocokan NIP atau ID Karyawan
             if(inputNip !== emp.nip && inputNip !== emp.id) {
                 alert('Konfirmasi Gagal! NIP atau ID Karyawan yang Anda masukkan tidak cocok dengan data karyawan yang dipilih.');
                 return;
@@ -1679,7 +1903,6 @@
                 closeChangePhotoModal();
                 syncDataFromFirebase();
 
-                // Sinkronkan tampilan jika sedang dipilih di portal utama
                 const mainSelect = document.getElementById('employeeSelect');
                 if(mainSelect && mainSelect.value === empId) {
                     onEmployeeSelectChange();
@@ -1775,7 +1998,9 @@
             const targetMin = parseInt(jamMasukSplit[0]) * 60 + parseInt(jamMasukSplit[1]) + state.settings.toleransi;
             const currentMin = now.getHours() * 60 + now.getMinutes();
 
-            const statusShift = (currentMin <= targetMin) ? "Tepat Waktu" : "Terlambat";
+            const isLate = (currentMin > targetMin);
+            const statusShift = isLate ? "Terlambat" : "Tepat Waktu";
+            const dendaVal = isLate ? NOMINAL_DENDA_TERLAMBAT : 0;
 
             const newAtt = {
                 id: "ATT-" + Date.now(),
@@ -1792,7 +2017,8 @@
                 tanggal: tanggalFormatted,
                 agenda,
                 gps: state.currentGPS.address,
-                statusShift
+                statusShift,
+                denda: dendaVal
             };
 
             state.attendance.unshift(newAtt);
@@ -1812,12 +2038,18 @@
 
             let html = '';
             state.attendance.forEach(att => {
-                // Ambil foto dari data absensi atau sinkronkan dengan data master karyawan terbaru
                 const currentEmp = state.employees.find(e => e.id === att.empId);
                 const activeFoto = (currentEmp && currentEmp.foto && currentEmp.foto.trim() !== "") ? currentEmp.foto : (att.foto || "");
                 const fotoSrc = activeFoto ? activeFoto : `https://via.placeholder.com/40/6B0D18/FFFFFF?text=${encodeURIComponent(att.nama.charAt(0))}`;
                 
-                const badgeClass = att.statusShift === "Tepat Waktu" ? "badge-success" : "badge-warning";
+                const isLate = att.statusShift === "Terlambat";
+                const badgeClass = isLate ? "badge-danger" : "badge-success";
+                
+                const hitungDenda = isLate ? (att.denda !== undefined ? att.denda : NOMINAL_DENDA_TERLAMBAT) : 0;
+                const dendaDisplay = hitungDenda > 0 
+                    ? `<span style="color: #c0392b; font-weight: 700;">Rp ${hitungDenda.toLocaleString('id-ID')}</span>`
+                    : `<span style="color: #27ae60; font-weight: 600;">Rp 0</span>`;
+
                 html += `
                     <tr>
                         <td><strong>${att.hari}</strong><br><small>${att.tanggal}</small></td>
@@ -1830,6 +2062,7 @@
                         <td>${att.agenda}</td>
                         <td><small>${att.gps}</small></td>
                         <td><span class="badge ${badgeClass}">${att.statusShift}</span></td>
+                        <td>${dendaDisplay}</td>
                         <td>
                             <button class="btn btn-danger btn-sm" onclick="deleteAttendance('${att.id}')"><i class="fa-solid fa-trash"></i></button>
                         </td>
@@ -1837,7 +2070,7 @@
                 `;
             });
 
-            tbody.innerHTML = html || '<tr><td colspan="8" style="text-align:center;">Belum ada data presensi.</td></tr>';
+            tbody.innerHTML = html || '<tr><td colspan="9" style="text-align:center;">Belum ada data presensi.</td></tr>';
         }
 
         async function deleteAttendance(id) {
@@ -1852,37 +2085,43 @@
             let tableHTML = `
                 <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
                 <head>
-                    <title>Rekap Absensi Karyawan HWL Law Firm</title>
+                    <title>Rekap Absensi & Sanksi Denda HWL Law Firm</title>
                     <style>
                         body { font-family: Arial, sans-serif; }
-                        h2 { color: #6B0D18; text-align: center; }
+                        h2 { color: #6B0D18; text-align: center; margin-bottom: 2px; }
+                        h3 { text-align: center; margin-top: 2px; color: #333; }
                         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-                        th { background-color: #6B0D18; color: #ffffff; border: 1px solid #000; padding: 8px; text-align: left; }
-                        td { border: 1px solid #000; padding: 8px; text-align: left; }
+                        th { background-color: #6B0D18; color: #ffffff; border: 1px solid #000; padding: 8px; text-align: left; font-size: 12px; }
+                        td { border: 1px solid #000; padding: 8px; text-align: left; font-size: 11px; }
+                        .text-red { color: #c0392b; font-weight: bold; }
                     </style>
                 </head>
                 <body>
                     <h2>KANTOR HUKUM HWL LAW FIRM</h2>
-                    <h3 style="text-align: center;">LAPORAN REKAPITULASI PRESENSI KARYAWAN</h3>
-                    <p style="text-align: center;">Tanggal Cetak: ${new Date().toLocaleDateString('id-ID')}</p>
+                    <h3>LAPORAN REKAPITULASI PRESENSI & SANKSAM DENDA KETERLAMBATAN</h3>
+                    <p style="text-align: center;">Tanggal Cetak Laporan: ${new Date().toLocaleDateString('id-ID')}</p>
                     <hr>
                     <table>
                         <thead>
                             <tr>
                                 <th>Hari / Tanggal</th>
-                                <th>Waktu Precise</th>
+                                <th>Waktu Presisi</th>
                                 <th>NIP</th>
                                 <th>Nama Karyawan</th>
                                 <th>Jabatan</th>
                                 <th>Agenda Kegiatan</th>
                                 <th>Lokasi GPS</th>
                                 <th>Status</th>
+                                <th>Denda Sanksi</th>
                             </tr>
                         </thead>
                         <tbody>
             `;
 
             state.attendance.forEach(att => {
+                const isLate = att.statusShift === "Terlambat";
+                const dendaVal = isLate ? (att.denda !== undefined ? att.denda : NOMINAL_DENDA_TERLAMBAT) : 0;
+                
                 tableHTML += `
                     <tr>
                         <td>${att.hari}, ${att.tanggal}</td>
@@ -1893,6 +2132,7 @@
                         <td>${att.agenda}</td>
                         <td>${att.gps}</td>
                         <td>${att.statusShift}</td>
+                        <td class="${isLate ? 'text-red' : ''}">Rp ${dendaVal.toLocaleString('id-ID')}</td>
                     </tr>
                 `;
             });
@@ -1908,7 +2148,7 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `Laporan_Absensi_HWL_Law_Firm_${Date.now()}.doc`;
+            a.download = `Laporan_Absensi_Denda_HWL_Law_Firm_${Date.now()}.doc`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -2088,6 +2328,14 @@
             document.getElementById('statHadirToday').innerText = state.attendance.length;
             document.getElementById('statIzinToday').innerText = state.leaves.length;
             document.getElementById('statPendingTasks').innerText = state.tasks.filter(t => t.status === 'Pending').length;
+
+            let totalDenda = 0;
+            state.attendance.forEach(att => {
+                if(att.statusShift === "Terlambat") {
+                    totalDenda += (att.denda !== undefined ? Number(att.denda) : NOMINAL_DENDA_TERLAMBAT);
+                }
+            });
+            document.getElementById('statTotalDenda').innerText = `Rp ${totalDenda.toLocaleString('id-ID')}`;
         }
     </script>
 </body>
