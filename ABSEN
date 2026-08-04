@@ -367,6 +367,7 @@
         .badge-success { background: #27ae60; color: white; }
         .badge-warning { background: #f39c12; color: white; }
         .badge-info { background: #2980b9; color: white; }
+        .badge-danger { background: #c0392b; color: white; }
 
         .status-box {
             padding: 0.8rem 1rem;
@@ -809,17 +810,20 @@
                     </div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-icon" style="background: #2980b9;"><i class="fa-solid fa-tasks"></i></div>
+                    <div class="stat-icon" style="background: #c0392b;"><i class="fa-solid fa-file-invoice-dollar"></i></div>
                     <div>
-                        <div class="stat-val" id="statPendingTasks">0</div>
-                        <div class="stat-lbl">Tugas Active</div>
+                        <div class="stat-val" id="statTotalDendaAdmin">Rp 0</div>
+                        <div class="stat-lbl">Total Akumulasi Denda</div>
                     </div>
                 </div>
             </div>
 
-            <div style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; overflow-x: auto;">
+            <div style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; overflow-x: auto; flex-wrap: wrap;">
                 <button class="btn btn-gold admin-tab-btn active" onclick="switchAdminSubTab('rekapSubTab', this)">
                     <i class="fa-solid fa-table"></i> Rekap Laporan Absensi
+                </button>
+                <button class="btn btn-outline admin-tab-btn" onclick="switchAdminSubTab('rekapDendaSubTab', this)" style="color: var(--maroon-primary); border-color: var(--maroon-primary);">
+                    <i class="fa-solid fa-money-bill-wave"></i> Rekap Denda Keterlambatan
                 </button>
                 <button class="btn btn-outline admin-tab-btn" onclick="switchAdminSubTab('karyawanSubTab', this)" style="color: var(--maroon-primary); border-color: var(--maroon-primary);">
                     <i class="fa-solid fa-user-plus"></i> Kelola Data Karyawan
@@ -837,7 +841,7 @@
                 <div class="card">
                     <div class="card-header">
                         <div class="card-title">
-                            <i class="fa-solid fa-clock-rotate-left"></i> Rekapitulasi Presensi Karyawan
+                            <i class="fa-solid fa-clock-rotate-left"></i> Rekapitulasi Presensi Karyawan (Permanen)
                         </div>
                         <div style="display: flex; gap: 0.5rem;">
                             <button class="btn btn-gold btn-sm" onclick="exportToWordDoc()">
@@ -856,7 +860,7 @@
                                     <th>Jabatan</th>
                                     <th>Agenda Kegiatan</th>
                                     <th>Lokasi GPS</th>
-                                    <th>Status Shift</th>
+                                    <th>Status Shift & Denda</th>
                                     <th>Aksi</th>
                                 </tr>
                             </thead>
@@ -870,7 +874,36 @@
                 </div>
             </div>
 
-            <!-- SUB TAB 2: KELOLA KARYAWAN -->
+            <!-- SUB TAB 2: REKAP DENDA KETERLAMBATAN -->
+            <div id="rekapDendaSubTab" class="admin-sub-tab" style="display: none;">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fa-solid fa-file-invoice-dollar"></i> Rekapitulasi Denda Keterlambatan Karyawan (Rp 10.000 / Terlambat)
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table" id="rekapDendaTable">
+                            <thead>
+                                <tr>
+                                    <th>NIP & Nama Karyawan</th>
+                                    <th>Jabatan</th>
+                                    <th>Total Terlambat</th>
+                                    <th>Tarif Denda / Hari</th>
+                                    <th>Total Denda Akumulasi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rekapDendaTableBody">
+                                <tr>
+                                    <td colspan="5" style="text-align: center;">Menghitung denda...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SUB TAB 3: KELOLA KARYAWAN -->
             <div id="karyawanSubTab" class="admin-sub-tab" style="display: none;">
                 <div class="grid-2">
                     <div class="card">
@@ -927,7 +960,7 @@
                 </div>
             </div>
 
-            <!-- SUB TAB 3: INPUT TUGAS & DEADLINE -->
+            <!-- SUB TAB 4: INPUT TUGAS & DEADLINE -->
             <div id="tugasSubTab" class="admin-sub-tab" style="display: none;">
                 <div class="grid-2">
                     <div class="card">
@@ -980,7 +1013,7 @@
                 </div>
             </div>
 
-            <!-- SUB TAB 4: VERIFIKASI IZIN & SAKIT -->
+            <!-- SUB TAB 5: VERIFIKASI IZIN & SAKIT -->
             <div id="izinSubTab" class="admin-sub-tab" style="display: none;">
                 <div class="card">
                     <div class="card-header">
@@ -1177,6 +1210,7 @@
     <!-- SCRIPT APPLICATION CODE -->
     <script>
         const DB_BASE_URL = "https://absen-hwl-law-firm-default-rtdb.asia-southeast1.firebasedatabase.app";
+        const TARIF_DENDA = 10000;
         
         let state = {
             adminLoggedIn: false,
@@ -1292,7 +1326,6 @@
                     if(settingsData) {
                         state.settings = { ...state.settings, ...settingsData };
                     } else {
-                        // Inisialisasi default settings di Firebase jika belum ada
                         await saveDataToFirebase('settings', state.settings);
                     }
                 }
@@ -1318,21 +1351,20 @@
                     const attData = await resAtt.json();
                     if (attData) {
                         let attList = [];
-                        // Support baik struktur Object (dari Push) maupun Array
                         Object.keys(attData).forEach(key => {
                             let item = attData[key];
                             if(item) {
-                                item.firebaseKey = key; // simpan ID unik untuk hapus
+                                item.firebaseKey = key;
                                 attList.push(item);
                             }
                         });
-                        // Urutkan presensi terbaru di paling atas
                         attList.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
                         state.attendance = attList;
                     } else {
                         state.attendance = [];
                     }
                     renderAttendanceRekapTable();
+                    renderRekapDendaTable();
                 }
 
                 // Fetch Tasks
@@ -1479,7 +1511,6 @@
             state.settings.jamPulang = document.getElementById('settingJamPulang').value;
             state.settings.toleransi = parseInt(document.getElementById('settingToleransi').value) || 15;
 
-            // Simpan permanent ke Firebase
             await saveDataToFirebase('settings', state.settings);
             alert('Pengaturan Jam Kerja & Kredensial Admin Berhasil Disimpan Permanen!');
             closeAdminSettingsModal();
@@ -1778,7 +1809,6 @@
             }
         }
 
-        // AKSI KIRIM PRESENSI: MENGGUNAKAN POST AGAR PERMANEN & ANTI HILANG
         async function handleAttendanceSubmit(e) {
             e.preventDefault();
 
@@ -1814,6 +1844,7 @@
             const currentMin = now.getHours() * 60 + now.getMinutes();
 
             const statusShift = (currentMin <= targetMin) ? "Tepat Waktu" : "Terlambat";
+            const dendaNominal = (statusShift === "Terlambat") ? TARIF_DENDA : 0;
 
             const newAtt = {
                 empId: emp.id,
@@ -1830,10 +1861,10 @@
                 agenda,
                 gps: state.currentGPS.address,
                 statusShift,
+                denda: dendaNominal,
                 timestamp: now.getTime()
             };
 
-            // Menggunakan POST untuk menambah log baru secara permanen di Firebase tanpa menimpa data terdahulu
             try {
                 await fetch(`${DB_BASE_URL}/absensi.json`, {
                     method: 'POST',
@@ -1841,7 +1872,8 @@
                     body: JSON.stringify(newAtt)
                 });
 
-                alert(`PRESENSI BERHASIL!\n\nWaktu: ${hariFormatted}, ${tanggalFormatted} - ${timestampFormatted}\nLokasi GPS: ${state.currentGPS.address}\nStatus: ${statusShift}`);
+                let dendaAlertMsg = statusShift === "Terlambat" ? `\n\n[PEMBERITAHUAN]\nStatus: Terlambat\nDenda Keterlambatan: Rp ${TARIF_DENDA.toLocaleString('id-ID')}` : "";
+                alert(`PRESENSI BERHASIL!\n\nWaktu: ${hariFormatted}, ${tanggalFormatted} - ${timestampFormatted}\nLokasi GPS: ${state.currentGPS.address}\nStatus: ${statusShift}${dendaAlertMsg}`);
 
                 document.getElementById('attendanceForm').reset();
                 onEmployeeSelectChange();
@@ -1862,7 +1894,11 @@
                 const activeFoto = (currentEmp && currentEmp.foto && currentEmp.foto.trim() !== "") ? currentEmp.foto : (att.foto || "");
                 const fotoSrc = activeFoto ? activeFoto : `https://via.placeholder.com/40/6B0D18/FFFFFF?text=${encodeURIComponent(att.nama.charAt(0))}`;
                 
-                const badgeClass = att.statusShift === "Tepat Waktu" ? "badge-success" : "badge-warning";
+                const isLate = att.statusShift === "Terlambat";
+                const badgeClass = isLate ? "badge-warning" : "badge-success";
+                const dendaVal = att.denda !== undefined ? att.denda : (isLate ? TARIF_DENDA : 0);
+                const dendaBadge = isLate ? `<br><span class="badge badge-danger" style="margin-top:4px;">Denda: Rp ${dendaVal.toLocaleString('id-ID')}</span>` : "";
+
                 const deleteKey = att.firebaseKey || att.id;
 
                 html += `
@@ -1876,7 +1912,7 @@
                         <td>${att.jabatan}</td>
                         <td>${att.agenda}</td>
                         <td><small>${att.gps}</small></td>
-                        <td><span class="badge ${badgeClass}">${att.statusShift}</span></td>
+                        <td><span class="badge ${badgeClass}">${att.statusShift}</span>${dendaBadge}</td>
                         <td>
                             <button class="btn btn-danger btn-sm" onclick="deleteAttendance('${deleteKey}')"><i class="fa-solid fa-trash"></i></button>
                         </td>
@@ -1887,7 +1923,62 @@
             tbody.innerHTML = html || '<tr><td colspan="8" style="text-align:center;">Belum ada data presensi.</td></tr>';
         }
 
-        // HAPUS ABSENSI HANYA OLEH ADMIN
+        function renderRekapDendaTable() {
+            const tbody = document.getElementById('rekapDendaTableBody');
+            if(!tbody) return;
+
+            let dendaSummaryMap = {};
+            state.employees.forEach(emp => {
+                dendaSummaryMap[emp.id] = {
+                    nip: emp.nip,
+                    nama: emp.nama,
+                    jabatan: emp.jabatan,
+                    totalTerlambat: 0,
+                    totalDenda: 0
+                };
+            });
+
+            state.attendance.forEach(att => {
+                const isLate = att.statusShift === "Terlambat";
+                if(isLate) {
+                    if(att.empId && dendaSummaryMap[att.empId]) {
+                        dendaSummaryMap[att.empId].totalTerlambat += 1;
+                        dendaSummaryMap[att.empId].totalDenda += (att.denda !== undefined ? att.denda : TARIF_DENDA);
+                    } else {
+                        // Fallback jika nama tercatat manual / id tidak match persis
+                        let foundKey = Object.keys(dendaSummaryMap).find(k => dendaSummaryMap[k].nama === att.nama);
+                        if(foundKey) {
+                            dendaSummaryMap[foundKey].totalTerlambat += 1;
+                            dendaSummaryMap[foundKey].totalDenda += (att.denda !== undefined ? att.denda : TARIF_DENDA);
+                        }
+                    }
+                }
+            });
+
+            let html = '';
+            let grandTotalDenda = 0;
+
+            Object.values(dendaSummaryMap).forEach(item => {
+                grandTotalDenda += item.totalDenda;
+                html += `
+                    <tr>
+                        <td><strong>${item.nama}</strong><br><small>${item.nip}</small></td>
+                        <td>${item.jabatan}</td>
+                        <td><span class="badge ${item.totalTerlambat > 0 ? 'badge-warning' : 'badge-success'}">${item.totalTerlambat} Kali</span></td>
+                        <td>Rp ${TARIF_DENDA.toLocaleString('id-ID')} / hari</td>
+                        <td><strong style="color: ${item.totalDenda > 0 ? '#c0392b' : '#27ae60'};">Rp ${item.totalDenda.toLocaleString('id-ID')}</strong></td>
+                    </tr>
+                `;
+            });
+
+            tbody.innerHTML = html || '<tr><td colspan="5" style="text-align:center;">Belum ada data denda keterlambatan.</td></tr>';
+            
+            const statTotalDendaElem = document.getElementById('statTotalDendaAdmin');
+            if(statTotalDendaElem) {
+                statTotalDendaElem.innerText = `Rp ${grandTotalDenda.toLocaleString('id-ID')}`;
+            }
+        }
+
         async function deleteAttendance(key) {
             if(confirm('Apakah Anda yakin ingin menghapus log presensi ini dari portal admin secara permanen?')) {
                 try {
@@ -1916,7 +2007,7 @@
                 </head>
                 <body>
                     <h2>KANTOR HUKUM HWL LAW FIRM</h2>
-                    <h3 style="text-align: center;">LAPORAN REKAPITULASI PRESENSI KARYAWAN</h3>
+                    <h3 style="text-align: center;">LAPORAN REKAPITULASI PRESENSI & DENDA KARYAWAN</h3>
                     <p style="text-align: center;">Tanggal Cetak: ${new Date().toLocaleDateString('id-ID')}</p>
                     <hr>
                     <table>
@@ -1929,13 +2020,17 @@
                                 <th>Jabatan</th>
                                 <th>Agenda Kegiatan</th>
                                 <th>Lokasi GPS</th>
-                                <th>Status</th>
+                                <th>Status & Denda</th>
                             </tr>
                         </thead>
                         <tbody>
             `;
 
             state.attendance.forEach(att => {
+                const isLate = att.statusShift === "Terlambat";
+                const dendaVal = att.denda !== undefined ? att.denda : (isLate ? TARIF_DENDA : 0);
+                const dendaText = isLate ? ` (Terlambat - Denda: Rp ${dendaVal.toLocaleString('id-ID')})` : " (Tepat Waktu)";
+                
                 tableHTML += `
                     <tr>
                         <td>${att.hari}, ${att.tanggal}</td>
@@ -1945,7 +2040,7 @@
                         <td>${att.jabatan}</td>
                         <td>${att.agenda}</td>
                         <td>${att.gps}</td>
-                        <td>${att.statusShift}</td>
+                        <td>${att.statusShift} ${dendaText}</td>
                     </tr>
                 `;
             });
@@ -1961,7 +2056,7 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `Laporan_Absensi_HWL_Law_Firm_${Date.now()}.doc`;
+            a.download = `Laporan_Absensi_Denda_HWL_${Date.now()}.doc`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -2140,7 +2235,6 @@
             document.getElementById('statTotalEmployees').innerText = state.employees.length;
             document.getElementById('statHadirToday').innerText = state.attendance.length;
             document.getElementById('statIzinToday').innerText = state.leaves.length;
-            document.getElementById('statPendingTasks').innerText = state.tasks.filter(t => t.status === 'Pending').length;
         }
     </script>
 </body>
